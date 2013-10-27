@@ -11,6 +11,30 @@ var Tetvas = (function() {
   /*******************************************************
    * Utility functions
    *******************************************************/
+
+  function shuffle(arr) {
+    /* Randomly order an array */
+    var index = arr.length;
+    var nextSwap;
+    var temp;
+
+    while(index) {
+      // Choose a random element
+      nextSwap = Math.floor((Math.random() * index));
+
+      // One less item to choose from now
+      index -= 1;
+
+      // Swap this item with a randomly chosen item
+      temp = arr[index];
+      arr[index] = arr[nextSwap];
+      arr[nextSwap] = temp;
+    }
+
+    // Might as well return something
+    return arr;
+  }
+
   function copyPoint(pt) {
     /* Return a copy of the point */
     return { x : pt.x, y : pt.y };
@@ -27,6 +51,7 @@ var Tetvas = (function() {
   }
 
   function addPoints() {
+    /* Sum a list of points up */
     var newPoint = { x : 0, y : 0 };
     var lop;
     var lop = arguments[0] instanceof Array ? arguments[0] : arguments;
@@ -37,6 +62,10 @@ var Tetvas = (function() {
     }
     return newPoint;
   }
+
+  /*******************************************************
+   * Useful classes
+   *******************************************************/
 
   function Block(pt, fill) {
     /*
@@ -181,23 +210,109 @@ var Tetvas = (function() {
       }
     };
 
-    Piece.moveDown = function() {
-      /* Move the piece down one block */
-      this.origin.y += 1;
+    Piece.updateBlocks = function() {
+      /*
+       * Update the blocks to have new positions based on
+       * the origin of the piece
+       */
       for (var i = 0; i < this.blocks.length; ++i) {
-        this.blocks[i].move(this.getCoords(this.points[i]));
+        this.blocks[i].setPoint(this.getCoords(this.points[i]));
       }
+    };
+
+    Piece.moveDown = function(frozenBlocks) {
+      /*
+       * Move the piece down one block
+       * Returns true if the move is successful (no intersection with frozenBlocks)
+       * Returns false if the move is unsuccessful
+       */
+
+      // Move origin; set new points for blocks
+      this.origin.y += 1;
+      this.updateBlocks();
+
+      // Check if the new position intersects with any of the frozen blocks
+      if (this.intersects(frozenBlocks)) {
+        // It does intersect. Undo the move
+        this.origin.y -= 1;
+        this.updateBlocks();
+        return false;
+      }
+
+      this.draw();
+      return true;
+    };
+
+    Piece.intersects = function(frozenBlocks) {
+      /*
+       * Determine if this piece intersects any frozen blocks
+       */
+
+      for (var i = 0; i < this.blocks.length; ++i) {
+        var coords = this.blocks[i].gridCoords;
+        if (frozenBlocks[coords.x][coords.y]) {
+          return true;
+        }
+      }
+      return false;
+
     };
 
     return Piece;
   }
 
+  /*******************************************************
+   * Main driver area
+   *******************************************************/
+
+  var Tetvas = {};
+
+  // List of possible pieces to use to generate the next piece
+  Tetvas.pieceGen = [ 'I', 'O', 'T', 'J', 'L', 'S', 'Z'];
+
+  // Blocks that have been frozen, organized by columns and rows
+  Tetvas.frozenBlocks = {};
+  // Initialize to empty objects
+  for (var i = 0; i < 10; ++i) {
+    Tetvas.frozenBlocks[i] = {};
+  }
+
+  Tetvas.getNextPiece = function() {
+    /* Get the next piece to generate */
+    if (!this.pieceIndex) { this.pieceGen.shuffle(); }
+    return this.pieceGen[this.pieceIndex++ % this.pieceGen.length];
+  };
+
+  Tetvas.tick = function() {
+    /* Function to represent one game tick */
+
+    // Move the piece down (or try to)
+    if(!this.currentPiece.moveDown(this.frozenBlocks)) {
+
+      // Move failed.  Freeze the piece and generate a new one
+      var blocks = this.currentPiece.blocks;
+      for (var i = 0; i < blocks.length; ++i) {
+        var coords = blocks[i].gridCoords;
+        this.frozenBlocks[coords.x][coords.y] = blocks[i];
+      }
+
+      // Generate a new piece
+      this.currentPiece = new Piece(this.getNextPiece());
+    }
+
+  };
+
+
+  Tetvas.start = function() {
+    // Start the game
+  };
+
   var p = new Piece('Z');
-  //p.moveDown();
+  p.moveDown();
   p.moveDown();
   p.moveDown();
   p.moveDown();
   p.draw();
 
-
+  return Tetvas;
 })();
