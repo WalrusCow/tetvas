@@ -175,7 +175,9 @@ var Tetvas = (function() {
 
     // Colour of this piece
     Piece.fill = SHAPE_FILLS[shape]; // Origin of the piece (points are relative to this)
-    Piece.origin = { x : 2, y : 2 };
+
+    // Starting point for the piece
+    Piece.origin = { x : 4, y : 0 };
 
     Piece.getCoords = function(pt) {
       /* Get the grid coordinates for a point relative to this piece's origin */
@@ -285,10 +287,20 @@ var Tetvas = (function() {
   // Initialize to empty objects
 
   // Actually this should be initialized to a border of the game !!!
-  // TODO
   Tetvas.frozenBlocks = {};
-  for (var i = 0; i < 10; ++i) {
+  for (var i = -1; i < 11; ++i) {
     Tetvas.frozenBlocks[i] = {};
+  }
+
+  // Build the left and right columns
+  for (var i = 0; i < 20; ++i) {
+    Tetvas.frozenBlocks[-1][i] = true;
+    Tetvas.frozenBlocks[10][i] = true;
+  }
+
+  // Build the bottom row
+  for (var i = 0; i < 10; ++i) {
+    Tetvas.frozenBlocks[i][20] = true;
   }
 
   Tetvas.getNextPiece = function() {
@@ -313,18 +325,37 @@ var Tetvas = (function() {
       // Generate a new piece
       this.currentPiece = new Piece(this.getNextPiece());
     }
-
   };
 
   Tetvas.start = function() {
+    /* Begin the game */
+    if (this.gameTicker) return;
     // Start the game
     var self = this;
+    // Create the first piece
     this.currentPiece = new Piece(this.getNextPiece());
+    // Start the ticker
     this.gameTicker = window.setInterval(function() {
       self.tick();
     }, this.speed);
   };
 
+  Tetvas.pause = function() {
+    /* Pause the game */
+    window.clearInterval(this.gameTicker);
+    this.gameTicker = null;
+  };
+
+  Tetvas.resume = function() {
+    /* Resume the game */
+    if (this.gameTicker) return;
+    // Start the ticker
+    this.gameTicker = window.setInterval(function() {
+      self.tick();
+    }, this.speed);
+  };
+
+  // Testing ...
   Tetvas.start();
   return Tetvas;
 })();
