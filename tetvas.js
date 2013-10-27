@@ -206,7 +206,7 @@ var Tetvas = (function() {
     Piece.undraw = function() {
       /* Undraw the piece */
       for (var i = 0; i < this.blocks.length; ++i) {
-        this.bocks[i].undraw();
+        this.blocks[i].undraw();
       }
     };
 
@@ -229,6 +229,7 @@ var Tetvas = (function() {
 
       // Move origin; set new points for blocks
       this.origin.y += 1;
+      this.undraw();
       this.updateBlocks();
 
       // Check if the new position intersects with any of the frozen blocks
@@ -236,6 +237,7 @@ var Tetvas = (function() {
         // It does intersect. Undo the move
         this.origin.y -= 1;
         this.updateBlocks();
+        this.draw();
         return false;
       }
 
@@ -249,7 +251,7 @@ var Tetvas = (function() {
        */
 
       for (var i = 0; i < this.blocks.length; ++i) {
-        var coords = this.blocks[i].gridCoords;
+        var coords = this.blocks[i].gridPoint;
         if (frozenBlocks[coords.x][coords.y]) {
           return true;
         }
@@ -265,21 +267,33 @@ var Tetvas = (function() {
    * Main driver area
    *******************************************************/
 
+  // Initial speed of the game ticker
+  var START_SPEED = 1000;
+
+  // Return object (game driver)
   var Tetvas = {};
+
+  Tetvas.speed = START_SPEED;
+
+  // Initial index
+  Tetvas.pieceIndex = 0;
 
   // List of possible pieces to use to generate the next piece
   Tetvas.pieceGen = [ 'I', 'O', 'T', 'J', 'L', 'S', 'Z'];
 
   // Blocks that have been frozen, organized by columns and rows
-  Tetvas.frozenBlocks = {};
   // Initialize to empty objects
+
+  // Actually this should be initialized to a border of the game !!!
+  // TODO
+  Tetvas.frozenBlocks = {};
   for (var i = 0; i < 10; ++i) {
     Tetvas.frozenBlocks[i] = {};
   }
 
   Tetvas.getNextPiece = function() {
     /* Get the next piece to generate */
-    if (!this.pieceIndex) { this.pieceGen.shuffle(); }
+    if (!this.pieceIndex) { shuffle(this.pieceGen); }
     return this.pieceGen[this.pieceIndex++ % this.pieceGen.length];
   };
 
@@ -292,7 +306,7 @@ var Tetvas = (function() {
       // Move failed.  Freeze the piece and generate a new one
       var blocks = this.currentPiece.blocks;
       for (var i = 0; i < blocks.length; ++i) {
-        var coords = blocks[i].gridCoords;
+        var coords = blocks[i].gridPoint;
         this.frozenBlocks[coords.x][coords.y] = blocks[i];
       }
 
@@ -302,17 +316,15 @@ var Tetvas = (function() {
 
   };
 
-
   Tetvas.start = function() {
     // Start the game
+    var self = this;
+    this.currentPiece = new Piece(this.getNextPiece());
+    this.gameTicker = window.setInterval(function() {
+      self.tick();
+    }, this.speed);
   };
 
-  var p = new Piece('Z');
-  p.moveDown();
-  p.moveDown();
-  p.moveDown();
-  p.moveDown();
-  p.draw();
-
+  Tetvas.start();
   return Tetvas;
 })();
