@@ -193,6 +193,9 @@ var Tetvas = (function() {
     // Colour of this piece
     Piece.fill = SHAPE_FILLS[shape]; // Origin of the piece (points are relative to this)
 
+    // Shape of piece
+    Piece.shape = shape;
+
     // Starting point for the piece
     Piece.origin = { x : 4, y : 0 };
 
@@ -310,14 +313,53 @@ var Tetvas = (function() {
       }
     };
 
-    Piece._rotate = function(dir) {
+    Piece._rotate = function(frozenBlocks, dir, recur) {
       /* Rotate the piece in the specified direction. */
+
+      // This one doesn't need to be rotated
+      if (this.shape === 'O') return true;
+
+      // Only undraw the shape if we are not undoing
+      // a previous rotation
+      if (!recur) this.undraw();
+
+      if (this.shape === 'I') {
+        // For I shape just swap x and y
+        for (var i = 0; i < this.points.length; ++i) {
+          // Swap x and y
+          this.points[i] = { x : this.points[i].y, y : this.points[i].x };
+          this.blocks[i].setPoint(this.getCoords(this.points[i]));
+        }
+
+      } else {
+        // We are doing a normal rotation
+        var p;
+        for (var i = 0; i < this.points.length; ++i) {
+          p = this.points[i];
+          // Swap and make negative (2x2 rotation matrix for pi/2 rotation)
+          this.points[i] = { x : -p.y * dir, y : p.x * dir };
+          this.blocks[i].setPoint(this.getCoords(this.points[i]));
+        }
+      }
+
+      // Check for intersection
+      if (!recur && this.intersects(frozenBlocks)) {
+        // If we intersected then we undo the rotation
+        this._rotate(frozenBlocks, -dir, true);
+        return false;
+      }
+
+      // No intersection - return success
+      this.draw();
+      return true;
+
     };
-    Piece.rotateRight = function() {
-      this._rotate(1);
+
+    Piece.rotateRight = function(frozenBlocks) {
+      this._rotate(frozenBlocks, 1);
     };
-    Piece.rotateLeft = function() {
-      this._rotate(-1);
+    Piece.rotateLeft = function(frozenBlocks) {
+      this._rotate(frozenBlocks, -1);
     };
 
     return Piece;
