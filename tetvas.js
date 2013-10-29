@@ -1,7 +1,9 @@
+/*
+ * Grid should be 20 high and 10 across
+ */
+
 var Tetvas = (function() {
-  /*
-   * Grid should be 20 high and 10 across
-   */
+  // Encapsulate a game
 
   // Key constants
   var UP_ARROW = 38;
@@ -44,6 +46,15 @@ var Tetvas = (function() {
    * Utility functions
    *******************************************************/
 
+  function rowFull(row) {
+    /* Check if a row is full */
+    //console.log(row);
+    for (var i = 0; i < 10; ++i) {
+      if (!row[i]) return false;
+    }
+    return true;
+  }
+
   function shuffle(arr) {
     /* Randomly order an array */
     var index = arr.length;
@@ -65,6 +76,42 @@ var Tetvas = (function() {
 
     // Might as well return something
     return arr;
+  }
+
+  function undrawRow(row) {
+    /* Safely undraw a row (but not the edge blocks) */
+    for (var i = 0; i < 10; ++i) {
+      if (row[i] && row[i].undraw) row[i].undraw();
+    }
+  }
+
+  function makeNewRow() {
+    /* Create a new object with columns to represent a row */
+    return { '-1' : true, '10' : true };
+  }
+
+  function clearRow(frozenBlocks, i) {
+    // Undraw the row
+    undrawRow(frozenBlocks[i]);
+
+    var rowToMove, oldPoint;
+    var movePoint = { x : 0, y : 1 };
+
+    // Move the rows above down by one
+    for (var j = i - 1; j >= 0 ; --j) {
+      rowToMove = frozenBlocks[j];
+
+      // Move each block in the row
+      for (var k = 0; k < 10; ++k)  {
+        if (!rowToMove[k]) continue;
+        oldPoint = rowToMove[k].gridPoint;
+        rowToMove[k].move(addPoints(oldPoint, movePoint));
+        console.log('asd');
+      }
+
+      // Update the object to point to the correct rows
+      frozenBlocks[j + 1] = rowToMove || makeNewRow();
+    }
   }
 
   function copyPoint(pt) {
@@ -250,7 +297,7 @@ var Tetvas = (function() {
 
       for (var i = 0; i < this.blocks.length; ++i) {
         var coords = this.blocks[i].gridPoint;
-        if (frozenBlocks[coords.x][coords.y]) {
+        if (frozenBlocks[coords.y][coords.x]) {
           return true;
         }
       }
@@ -288,29 +335,45 @@ var Tetvas = (function() {
     };
 
     /* Functions to move various directions */
-    Piece.moveLeft = function(frozenBlocks) {
-      return this._move(frozenBlocks, 'x', -1);
-    };
-    Piece.moveRight = function(frozenBlocks) {
-      return this._move(frozenBlocks, 'x', 1);
-    };
+    Piece.moveLeft = function(frozenBlocks) { return this._move(frozenBlocks, 'x', -1); };
+    Piece.moveRight = function(frozenBlocks) { return this._move(frozenBlocks, 'x', 1); };
+
     Piece.moveDown = function(frozenBlocks) {
       /* If the move failed then the piece freezes. */
-      var ret = this._move(frozenBlocks, 'y', 1);
-      return ret || this.freeze(frozenBlocks);
+      return this._move(frozenBlocks, 'y', 1) || this.freeze(frozenBlocks);
     };
 
-    Piece.drop = function(frozenBlocks) {
-      /* Drop the piece. */
-      while(this.moveDown(frozenBlocks));
-    };
+    /* Drop the piece (move down until fail) */
+    Piece.drop = function(frozenBlocks) { while(this.moveDown(frozenBlocks)); };
 
     Piece.freeze = function(frozenBlocks) {
-      /* Freeze the piece. */
+      /* Freeze the piece. Also remove full rows. */
+
+      // Track which rows the piece was in when frozen
+      // Use an object as a set
+      var rows = {};
+
+      // Add all blocks to frozenBlocks
       for (var i = 0; i < this.blocks.length; ++i) {
         var coords = this.blocks[i].gridPoint;
-        frozenBlocks[coords.x][coords.y] = this.blocks[i];
+        frozenBlocks[coords.y][coords.x] = this.blocks[i];
+
+        rows[coords.y] = true;
       }
+
+      // We just want the keys
+      rows = Object.keys(rows);
+
+      console.log('The rows : ', rows);
+
+      // Check to see about removing lines
+      // We have to check each row to see if it's full
+      for (var i = 0; i < rows.length; ++i) {
+        if (rowFull(frozenBlocks[rows[i]])) {
+          clearRow(frozenBlocks, rows[i]);
+        }
+      }
+
     };
 
     Piece._rotate = function(frozenBlocks, dir, recur) {
@@ -355,12 +418,9 @@ var Tetvas = (function() {
 
     };
 
-    Piece.rotateRight = function(frozenBlocks) {
-      this._rotate(frozenBlocks, 1);
-    };
-    Piece.rotateLeft = function(frozenBlocks) {
-      this._rotate(frozenBlocks, -1);
-    };
+    // Rotate right and left
+    Piece.rotateRight = function(frozenBlocks) { this._rotate(frozenBlocks, 1); };
+    Piece.rotateLeft = function(frozenBlocks) { this._rotate(frozenBlocks, -1); };
 
     return Piece;
   }
@@ -384,22 +444,19 @@ var Tetvas = (function() {
   // List of possible pieces to use to generate the next piece
   Tetvas.pieceGen = [ 'I', 'O', 'T', 'J', 'L', 'S', 'Z'];
 
-  // Blocks that have been frozen, organized by columns and rows
+  // Blocks that have been frozen, organized by rows then columns
   // We also have rows for the border, to make stopping the pieces
   // at the border automatic
   Tetvas.frozenBlocks = {};
-  for (var i = -1; i < 11; ++i) {
-    Tetvas.frozenBlocks[i] = {};
+
+  // Build the rows
+  for (var i = -1; i < 21; ++i) {
+    Tetvas.frozenBlocks[i] = makeNewRow();
   }
 
-  // Build the left and right columns (to stop blocks)
-  for (var i = -1; i < 20; ++i) {
-    Tetvas.frozenBlocks[-1][i] = true;
-    Tetvas.frozenBlocks[10][i] = true;
-  }
   // Build the bottom row (to stop blocks)
   for (var i = 0; i < 10; ++i) {
-    Tetvas.frozenBlocks[i][20] = true;
+    Tetvas.frozenBlocks[20][i] = true;
   }
 
   Tetvas.getNextPiece = function() {
@@ -421,9 +478,6 @@ var Tetvas = (function() {
     // Move the piece down (or try to)
     if(!this.piece.moveDown(this.frozenBlocks)) {
 
-      this.piece.freeze(this.frozenBlocks);
-
-
       // Generate a new piece
       this.piece = new Piece(this.getNextPiece());
     }
@@ -433,32 +487,39 @@ var Tetvas = (function() {
     /* Handle a keystroke */
 
     switch(key) {
+      // Move piece left
       case LEFT_ARROW:
         this.piece.moveLeft(this.frozenBlocks);
         break;
 
+      // Move piece right
       case RIGHT_ARROW:
         this.piece.moveRight(this.frozenBlocks);
         break;
 
+      // Move piece down
       case DOWN_ARROW:
         this.piece.moveDown(this.frozenBlocks);
         break;
 
+      // Rotate CW
       case UP_ARROW:
       case X_KEY:
         this.piece.rotateRight(this.frozenBlocks);
         break;
 
+      // Rotate CCW
       case Z_KEY:
         this.piece.rotateLeft(this.frozenBlocks);
         break;
 
+      // Hard drop
       case CTRL_KEY:
       case SPACE_BAR:
         this.piece.drop(this.frozenBlocks);
         break;
 
+      // Pause game
       case P_KEY:
         this.togglePause();
         break;
@@ -512,7 +573,7 @@ var Tetvas = (function() {
     }
   };
 
-  // Testing ...
+  // Play! ( Testing ... )
   Tetvas.start();
   return Tetvas;
 })();
