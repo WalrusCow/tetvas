@@ -108,7 +108,9 @@ var Tetvas = (function() {
       }
 
       // Update the object to point to the correct rows
-      frozenBlocks[j + 1] = rowToMove || makeNewRow();
+      frozenBlocks[j + 1] = rowToMove;
+      // Remove the row we just moved
+      frozenBlocks[j] = makeNewRow();
     }
   }
 
