@@ -235,51 +235,52 @@ var Tetvas = (function() {
     };
 
     // Return object
-    var piece = {};
+    var Piece = {};
 
     // Colour of this piece
-    piece.fill = SHAPE_FILLS[shape]; // Origin of the piece (points are relative to this)
+    Piece.fill = SHAPE_FILLS[shape];
 
     // Shape of piece
-    piece.shape = shape;
+    Piece.shape = shape;
 
-    // Starting point for the piece
-    piece.origin = { x : 4, y : 0 };
+    // Starting point for the Piece
+    // Origin of the piece (points are relative to this)
+    Piece.origin = { x : 4, y : 0 };
 
-    piece.getCoords = function(pt) {
+    Piece.getCoords = function(pt) {
       /* Get the grid coordinates for a point relative to this piece's origin */
       return { x : this.origin.x + pt.x, y : this.origin.y + pt.y };
     };
 
     // Points for the piece
-    piece.points = [];
+    Piece.points = [];
 
     // Block objects that make up this piece
-    piece.blocks = [];
+    Piece.blocks = [];
 
     // Copy initial points
     var pts = SHAPE_POINTS[shape];
     for (var i = 0; i < pts.length; ++i) {
       var newPoint = copyPoint(pts[i]);
-      piece.points.push(newPoint);
-      piece.blocks.push(new Block(piece.getCoords(newPoint), piece.fill));
+      Piece.points.push(newPoint);
+      Piece.blocks.push(new Block(Piece.getCoords(newPoint), Piece.fill));
     }
 
-    piece.draw = function() {
+    Piece.draw = function() {
       /* Draw the piece */
       for (var i = 0; i < this.blocks.length; ++i) {
         this.blocks[i].draw();
       }
     };
 
-    piece.undraw = function() {
+    Piece.undraw = function() {
       /* Undraw the piece */
       for (var i = 0; i < this.blocks.length; ++i) {
         this.blocks[i].undraw();
       }
     };
 
-    piece.updateBlocks = function() {
+    Piece.updateBlocks = function() {
       /*
        * Update the blocks to have new positions based on
        * the origin of the piece
@@ -290,7 +291,7 @@ var Tetvas = (function() {
     };
 
 
-    piece.intersects = function(frozenBlocks) {
+    Piece.intersects = function(frozenBlocks) {
       /*
        * Determine if this piece intersects any frozen blocks
        */
@@ -305,7 +306,7 @@ var Tetvas = (function() {
       return false;
     };
 
-    piece._move = function(frozenBlocks, axis, mag) {
+    Piece._move = function(frozenBlocks, axis, mag) {
       /*
        * Move the piece along the specified axis mag spaces
        * Returns true if the move is successful (no intersection with frozenBlocks)
@@ -335,18 +336,15 @@ var Tetvas = (function() {
     };
 
     /* Functions to move various directions */
-    piece.moveLeft = function(frozenBlocks) { return this._move(frozenBlocks, 'x', -1); };
-    piece.moveRight = function(frozenBlocks) { return this._move(frozenBlocks, 'x', 1); };
+    Piece.moveLeft = function(frozenBlocks) { return this._move(frozenBlocks, 'x', -1); };
+    Piece.moveRight = function(frozenBlocks) { return this._move(frozenBlocks, 'x', 1); };
 
-    piece.moveDown = function(frozenBlocks, tetvas) {
+    Piece.moveDown = function(frozenBlocks) {
       /* If the move failed then the piece freezes. */
-      return this._move(frozenBlocks, 'y', 1) || this.freeze(frozenBlocks, tetvas);
+      return this._move(frozenBlocks, 'y', 1);
     };
 
-    /* Drop the piece (move down until fail) */
-    piece.drop = function(frozenBlocks, tetvas) { while(this.moveDown(frozenBlocks, tetvas)); };
-
-    piece.freeze = function(frozenBlocks, tetvas) {
+    Piece.freeze = function(frozenBlocks) {
       /* Freeze the piece. Also remove full rows. */
 
       // Track which rows the piece was in when frozen
@@ -372,12 +370,9 @@ var Tetvas = (function() {
         }
       }
 
-      // New piece
-      tetvas.piece = new Piece(tetvas.getNextpiece());
-
     };
 
-    piece._rotate = function(frozenBlocks, dir, recur) {
+    Piece._rotate = function(frozenBlocks, dir, recur) {
       /* Rotate the piece in the specified direction. */
 
       // This one doesn't need to be rotated
@@ -420,10 +415,10 @@ var Tetvas = (function() {
     };
 
     // Rotate right and left
-    piece.rotateRight = function(frozenBlocks) { this._rotate(frozenBlocks, 1); };
-    piece.rotateLeft = function(frozenBlocks) { this._rotate(frozenBlocks, -1); };
+    Piece.rotateRight = function(frozenBlocks) { this._rotate(frozenBlocks, 1); };
+    Piece.rotateLeft = function(frozenBlocks) { this._rotate(frozenBlocks, -1); };
 
-    return piece;
+    return Piece;
   }
 
   /*******************************************************
@@ -460,7 +455,7 @@ var Tetvas = (function() {
     Tetvas.frozenBlocks[20][i] = true;
   }
 
-  Tetvas.getNextpiece = function() {
+  Tetvas.getNextPiece = function() {
     /* Get the next piece to generate */
     if (!this.pieceIndex) { shuffle(this.pieceGen); }
 
@@ -476,8 +471,18 @@ var Tetvas = (function() {
   Tetvas.tick = function() {
     /* Function to represent one game tick */
 
-    // Move the piece down (or try to)
-    this.piece.moveDown(this.frozenBlocks, this)
+    // More may be added later
+    this.moveDown();
+  };
+
+  Tetvas.moveDown = function() {
+    /* Move the piece down. Return true if successful move. */
+    if (!this.piece.moveDown(this.frozenBlocks, this)) {
+      this.piece.freeze(this.frozenBlocks);
+      this.piece = new Piece(this.getNextPiece());
+      return false;
+    }
+    return true;
   };
 
   Tetvas.keyStroke = function(key) {
@@ -496,7 +501,7 @@ var Tetvas = (function() {
 
       // Move piece down
       case DOWN_ARROW:
-        this.piece.moveDown(this.frozenBlocks, this);
+        this.moveDown();
         break;
 
       // Rotate CW
@@ -513,7 +518,7 @@ var Tetvas = (function() {
       // Hard drop
       case CTRL_KEY:
       case SPACE_BAR:
-        this.piece.drop(this.frozenBlocks, this);
+        while(this.moveDown());
         break;
 
       // Pause game
@@ -547,7 +552,7 @@ var Tetvas = (function() {
     this.registerListeners();
 
     // Create the first piece
-    this.piece = new Piece(this.getNextpiece());
+    this.piece = new Piece(this.getNextPiece());
 
     // Start the ticker
     this.togglePause();
