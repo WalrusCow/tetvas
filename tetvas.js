@@ -20,8 +20,9 @@ var Tetvas = (function() {
 
   // Constants for Blocks
   var GRID_SIZE = 15;
-  var BORDER_COLOUR = '#000000';
+  var BLOCK_BORDER_COLOUR = '#000000';
   var GHOST_BORDER_COLOUR = '#ffffff';
+  var GHOST_FILL = '#c3c3c3';
   var BORDER_WIDTH = 1;
 
   // Initial speed of the game ticker
@@ -49,9 +50,6 @@ var Tetvas = (function() {
     'S' : [ { x : 0, y : 0 }, { x : -1, y : 0 }, { x : 0, y : -1 }, { x : 1, y : -1 } ],
     'Z' : [ { x : 0, y : 0 }, { x : 1, y : 0 }, { x : 0, y : -1 }, { x : -1, y : -1 } ]
   };
-
-  // Fill for ghost
-  var GHOST_FILL = '#c3c3c3';
 
   // Canvas and context to use for everything
   // TODO : Consider a background and a foreground canvas?
@@ -151,79 +149,91 @@ var Tetvas = (function() {
    * Useful classes
    *******************************************************/
 
-  function Block(pt, fill, ghost) {
+  /*******************************************************
+   * Block class
+   *******************************************************/
+
+  function Block(pt, fill, borderColour) {
     /*
      * Block object to represent a square on the grid
      */
 
-    // Return object
-    var Block = {};
-
-    // Default to not a ghost
-    Block.ghost = ghost;
-
-    Block.setPoint = function(pt) {
-      /* Set new point for the block */
-      this.gridPoint = copyPoint(pt);
-      this._x = GRID_SIZE * this.gridPoint.x;
-      this._y = GRID_SIZE * this.gridPoint.y;
-    };
-
     // Set the point for the block
-    Block.gridPoint = {};
-    Block.setPoint(pt);
+    this.gridPoint = {};
+    this.setPoint(pt);
 
     // Set the fill
-    Block.fill = fill;
-
-    Block.undraw = function() {
-      /* Clear the block from the canvas */
-      ctx.clearRect(this._x, this._y, GRID_SIZE, GRID_SIZE);
-    };
-
-    Block.draw = function() {
-      /*
-       * Draw a square with a border. Two squares are actually drawn,
-       * one on top of the other, because using stroke for the outline
-       * spills over, making the block larger than the specified size
-       */
-
-      // Draw border square
-      ctx.fillStyle = this.ghost ? GHOST_BORDER_COLOUR : BORDER_COLOUR;
-      ctx.fillRect(this._x, this._y, GRID_SIZE, GRID_SIZE);
-
-      // Offset for the border
-      var fillPt = { x : this._x + BORDER_WIDTH, y : this._y + BORDER_WIDTH };
-      var fillSize = GRID_SIZE - (2 * BORDER_WIDTH);
-
-      // Draw fill square
-      ctx.fillStyle = this.fill;
-      ctx.fillRect(fillPt.x, fillPt.y, fillSize, fillSize);
-    };
-
-    Block.move = function(pt) {
-      /* Move a block to a new point */
-      this.undraw();
-      this.setPoint(pt);
-      this.draw();
-    };
-
-    Block.instersects = function() {
-      /* Check if Block intersects other blocks */
-      var lob = arguments[0] instanceof Array ? arguments[0] : arguments;
-      for (var i = 0; i < lob.length; ++i) {
-        if (pointsEqual(this.gridBlock, lob[i].gridBlock)) {
-          return true;
-        }
-      }
-      return false;
-
-    };
+    this.fill = fill;
+    this.borderColour = borderColour || BLOCK_BORDER_COLOUR;
 
     // Draw the new block
-    Block.draw();
-    return Block;
+    this.draw();
   }
+
+  Block.prototype.setPoint = function(pt) {
+    /* Set new point for the block */
+    this.gridPoint = copyPoint(pt);
+    this._x = GRID_SIZE * this.gridPoint.x;
+    this._y = GRID_SIZE * this.gridPoint.y;
+  };
+
+  Block.prototype.undraw = function() {
+    /* Clear the block from the canvas */
+    ctx.clearRect(this._x, this._y, GRID_SIZE, GRID_SIZE);
+  };
+
+  Block.prototype.draw = function() {
+    /*
+     * Draw a square with a border. Two squares are actually drawn,
+     * one on top of the other, because using stroke for the outline
+     * spills over, making the block larger than the specified size
+     */
+
+    // Draw border square
+    ctx.fillStyle = this.borderColour;
+    ctx.fillRect(this._x, this._y, GRID_SIZE, GRID_SIZE);
+
+    // Offset for the border
+    var fillPt = { x : this._x + BORDER_WIDTH, y : this._y + BORDER_WIDTH };
+    var fillSize = GRID_SIZE - (2 * BORDER_WIDTH);
+
+    // Draw fill square
+    ctx.fillStyle = this.fill;
+    ctx.fillRect(fillPt.x, fillPt.y, fillSize, fillSize);
+  };
+
+  Block.prototype.move = function(pt) {
+    /* Move a block to a new point */
+    this.undraw();
+    this.setPoint(pt);
+    this.draw();
+  };
+
+  Block.prototype.instersects = function() {
+    /* Check if Block intersects other blocks */
+    var lob = arguments[0] instanceof Array ? arguments[0] : arguments;
+    for (var i = 0; i < lob.length; ++i) {
+      if (pointsEqual(this.gridBlock, lob[i].gridBlock)) {
+        return true;
+      }
+    }
+    return false;
+
+  };
+
+  /*******************************************************
+   * Ghost block class
+   *******************************************************/
+
+  function GhostBlock(pt) {
+    // It's exactly a normal block, but with a different fill and border
+    Block.call(this, pt, GHOST_FILL, GHOST_BORDER_COLOUR);
+  }
+  GhostBlock.prototype = Object.create(Block.prototype);
+
+  /*******************************************************
+   * Piece class
+   *******************************************************/
 
   function Piece(shape) {
     /*
@@ -345,8 +355,14 @@ var Tetvas = (function() {
   };
 
   /* Functions to move various directions */
-  Piece.prototype.moveLeft = function(frozenBlocks) { return this._move(frozenBlocks, 'x', -1); };
-  Piece.prototype.moveRight = function(frozenBlocks) { return this._move(frozenBlocks, 'x', 1); };
+  Piece.prototype.moveLeft = function(frozenBlocks) {
+    this.ghost && this.ghost.moveLeft(frozenBlocks);
+    return this._move(frozenBlocks, 'x', -1);
+  };
+  Piece.prototype.moveRight = function(frozenBlocks) {
+    this.ghost && this.ghost.moveRight(frozenBlocks);
+    return this._move(frozenBlocks, 'x', 1);
+  };
 
   Piece.prototype.moveDown = function(frozenBlocks) {
     /* If the move failed then the piece freezes. */
@@ -383,6 +399,8 @@ var Tetvas = (function() {
 
   Piece.prototype._rotate = function(frozenBlocks, dir, recur) {
     /* Rotate the piece in the specified direction. */
+
+    this.ghost && this.ghost._rotate(frozenBlocks, dir, recur);
 
     // This one doesn't need to be rotated
     if (this.shape === 'O') return true;
@@ -423,9 +441,9 @@ var Tetvas = (function() {
 
   };
 
-    // Rotate right and left
-    Piece.prototype.rotateRight = function(frozenBlocks) { this._rotate(frozenBlocks, 1); };
-    Piece.prototype.rotateLeft = function(frozenBlocks) { this._rotate(frozenBlocks, -1); };
+  // Rotate right and left
+  Piece.prototype.rotateRight = function(frozenBlocks) { this._rotate(frozenBlocks, 1); };
+  Piece.prototype.rotateLeft = function(frozenBlocks) { this._rotate(frozenBlocks, -1); };
 
   /*******************************************************
    * Ghost piece
@@ -447,7 +465,7 @@ var Tetvas = (function() {
     for (var i = 0; i < pts.length; ++i) {
       var newPoint = copyPoint(pts[i]);
       this.points.push(newPoint);
-      this.blocks.push(new Block(this.getCoords(newPoint), this.fill, true));
+      this.blocks.push(new GhostBlock(this.getCoords(newPoint)));
     }
   };
 
@@ -507,7 +525,7 @@ var Tetvas = (function() {
 
   Tetvas.moveDown = function() {
     /* Move the piece down. Return true if successful move. */
-    if (!this.piece.moveDown(this.frozenBlocks, this)) {
+    if (!this.piece.moveDown(this.frozenBlocks)) {
       this.piece.freeze(this.frozenBlocks);
       this.piece = new Piece(this.getNextPiece());
       return false;
@@ -531,7 +549,7 @@ var Tetvas = (function() {
 
       // Move piece down
       case DOWN_ARROW:
-        this.moveDown();
+        this.piece.moveDown(this.frozenBlocks);
         break;
 
       // Rotate CW
