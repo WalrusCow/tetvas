@@ -1,3 +1,16 @@
+  function addPoints() {
+    /* Sum a list of points up */
+    var newPoint = { x : 0, y : 0 };
+    var lop;
+    var lop = arguments[0] instanceof Array ? arguments[0] : arguments;
+
+    for (var i = 0; i < lop.length; ++i) {
+      newPoint.x += lop[i].x;
+      newPoint.y += lop[i].y;
+    }
+    return newPoint;
+  }
+
 /*
  * Grid should be 20 high and 10 across
  */
@@ -21,6 +34,7 @@ var Tetvas = (function() {
   // Constants for Blocks
   var GRID_SIZE = 15;
   var BORDER_COLOUR = '#000000';
+  var GHOST_BORDER_COLOUR = '#ffffff';
   var BORDER_WIDTH = 1;
 
   // Initial speed of the game ticker
@@ -28,14 +42,17 @@ var Tetvas = (function() {
 
   // Colours for shapes
   var SHAPE_FILLS = {
-    'I' : '#00FFFF',
-    'O' : '#FFFF00',
-    'T' : '#FF00FF',
-    'J' : '#0000FF',
-    'L' : '#FFA500',
-    'S' : '#00FF00',
-    'Z' : '#FF0000'
+    'I' : '#00ffff',
+    'O' : '#ffff00',
+    'T' : '#ff00ff',
+    'J' : '#0000ff',
+    'L' : '#ffa500',
+    'S' : '#00ff00',
+    'Z' : '#ff0000'
   };
+
+  // Fill for ghost
+  var GHOST_FILL = '#c3c3c3';
 
   // Canvas and context to use for everything
   // TODO : Consider a background and a foreground canvas?
@@ -129,30 +146,20 @@ var Tetvas = (function() {
     return true;
   }
 
-  function addPoints() {
-    /* Sum a list of points up */
-    var newPoint = { x : 0, y : 0 };
-    var lop;
-    var lop = arguments[0] instanceof Array ? arguments[0] : arguments;
-
-    for (var i = 0; i < lop.length; ++i) {
-      newPoint.x += lop[i].x;
-      newPoint.y += lop[i].y;
-    }
-    return newPoint;
-  }
-
   /*******************************************************
    * Useful classes
    *******************************************************/
 
-  function Block(pt, fill) {
+  function Block(pt, fill, ghost) {
     /*
      * Block object to represent a square on the grid
      */
 
     // Return object
     var Block = {};
+
+    // Default to not a ghost
+    Block.ghost = ghost;
 
     Block.setPoint = function(pt) {
       /* Set new point for the block */
@@ -181,7 +188,7 @@ var Tetvas = (function() {
        */
 
       // Draw border square
-      ctx.fillStyle = BORDER_COLOUR;
+      ctx.fillStyle = this.ghost ? GHOST_BORDER_COLOUR : BORDER_COLOUR;
       ctx.fillRect(this._x, this._y, GRID_SIZE, GRID_SIZE);
 
       // Offset for the border
@@ -217,9 +224,9 @@ var Tetvas = (function() {
     return Block;
   }
 
-  function Piece(shape) {
+  function Piece(shape, ghost) {
     /*
-     * Make a new Piece of the specified shape.
+     * Make a new piece of the specified shape.
      * Shapes : I, O, T, J, L, S, Z
      */
 
@@ -235,52 +242,59 @@ var Tetvas = (function() {
     };
 
     // Return object
-    var Piece = {};
+    var piece = {};
 
     // Colour of this piece
-    Piece.fill = SHAPE_FILLS[shape];
+    piece.fill = SHAPE_FILLS[shape];
+
+    // Set proper fill if we are a ghost piece
+    if (ghost) {
+      piece.fill = GHOST_FILL;
+    } else {
+      //this.ghost = new Piece(shape, ghost);
+    }
 
     // Shape of piece
-    Piece.shape = shape;
+    piece.shape = shape;
 
-    // Starting point for the Piece
+    // Starting point for the piece
     // Origin of the piece (points are relative to this)
-    Piece.origin = { x : 4, y : 0 };
+    piece.origin = { x : 4, y : 0 };
 
-    Piece.getCoords = function(pt) {
+    piece.getCoords = function(pt) {
       /* Get the grid coordinates for a point relative to this piece's origin */
       return { x : this.origin.x + pt.x, y : this.origin.y + pt.y };
     };
 
     // Points for the piece
-    Piece.points = [];
+    piece.points = [];
 
     // Block objects that make up this piece
-    Piece.blocks = [];
+    piece.blocks = [];
 
     // Copy initial points
     var pts = SHAPE_POINTS[shape];
     for (var i = 0; i < pts.length; ++i) {
       var newPoint = copyPoint(pts[i]);
-      Piece.points.push(newPoint);
-      Piece.blocks.push(new Block(Piece.getCoords(newPoint), Piece.fill));
+      piece.points.push(newPoint);
+      piece.blocks.push(new Block(piece.getCoords(newPoint), piece.fill, ghost));
     }
 
-    Piece.draw = function() {
+    piece.draw = function() {
       /* Draw the piece */
       for (var i = 0; i < this.blocks.length; ++i) {
         this.blocks[i].draw();
       }
     };
 
-    Piece.undraw = function() {
+    piece.undraw = function() {
       /* Undraw the piece */
       for (var i = 0; i < this.blocks.length; ++i) {
         this.blocks[i].undraw();
       }
     };
 
-    Piece.updateBlocks = function() {
+    piece.updateBlocks = function() {
       /*
        * Update the blocks to have new positions based on
        * the origin of the piece
@@ -291,7 +305,7 @@ var Tetvas = (function() {
     };
 
 
-    Piece.intersects = function(frozenBlocks) {
+    piece.intersects = function(frozenBlocks) {
       /*
        * Determine if this piece intersects any frozen blocks
        */
@@ -306,7 +320,7 @@ var Tetvas = (function() {
       return false;
     };
 
-    Piece._move = function(frozenBlocks, axis, mag) {
+    piece._move = function(frozenBlocks, axis, mag) {
       /*
        * Move the piece along the specified axis mag spaces
        * Returns true if the move is successful (no intersection with frozenBlocks)
@@ -336,15 +350,15 @@ var Tetvas = (function() {
     };
 
     /* Functions to move various directions */
-    Piece.moveLeft = function(frozenBlocks) { return this._move(frozenBlocks, 'x', -1); };
-    Piece.moveRight = function(frozenBlocks) { return this._move(frozenBlocks, 'x', 1); };
+    piece.moveLeft = function(frozenBlocks) { return this._move(frozenBlocks, 'x', -1); };
+    piece.moveRight = function(frozenBlocks) { return this._move(frozenBlocks, 'x', 1); };
 
-    Piece.moveDown = function(frozenBlocks) {
+    piece.moveDown = function(frozenBlocks) {
       /* If the move failed then the piece freezes. */
       return this._move(frozenBlocks, 'y', 1);
     };
 
-    Piece.freeze = function(frozenBlocks) {
+    piece.freeze = function(frozenBlocks) {
       /* Freeze the piece. Also remove full rows. */
 
       // Track which rows the piece was in when frozen
@@ -372,7 +386,7 @@ var Tetvas = (function() {
 
     };
 
-    Piece._rotate = function(frozenBlocks, dir, recur) {
+    piece._rotate = function(frozenBlocks, dir, recur) {
       /* Rotate the piece in the specified direction. */
 
       // This one doesn't need to be rotated
@@ -415,11 +429,21 @@ var Tetvas = (function() {
     };
 
     // Rotate right and left
-    Piece.rotateRight = function(frozenBlocks) { this._rotate(frozenBlocks, 1); };
-    Piece.rotateLeft = function(frozenBlocks) { this._rotate(frozenBlocks, -1); };
+    piece.rotateRight = function(frozenBlocks) { this._rotate(frozenBlocks, 1); };
+    piece.rotateLeft = function(frozenBlocks) { this._rotate(frozenBlocks, -1); };
 
-    return Piece;
+    return piece;
   }
+
+  /*******************************************************
+   * Ghost piece
+   *******************************************************/
+
+  function Ghost() {
+  }
+  Ghost.prototype = new Piece();
+
+  x = new Ghost('L', '#666');
 
   /*******************************************************
    * Main driver area
@@ -455,7 +479,7 @@ var Tetvas = (function() {
     Tetvas.frozenBlocks[20][i] = true;
   }
 
-  Tetvas.getNextPiece = function() {
+  Tetvas.getNextpiece = function() {
     /* Get the next piece to generate */
     if (!this.pieceIndex) { shuffle(this.pieceGen); }
 
@@ -479,7 +503,7 @@ var Tetvas = (function() {
     /* Move the piece down. Return true if successful move. */
     if (!this.piece.moveDown(this.frozenBlocks, this)) {
       this.piece.freeze(this.frozenBlocks);
-      this.piece = new Piece(this.getNextPiece());
+      this.piece = new Piece(this.getNextpiece());
       return false;
     }
     return true;
@@ -552,7 +576,7 @@ var Tetvas = (function() {
     this.registerListeners();
 
     // Create the first piece
-    this.piece = new Piece(this.getNextPiece());
+    this.piece = new Piece(this.getNextpiece());
 
     // Start the ticker
     this.togglePause();
@@ -576,6 +600,6 @@ var Tetvas = (function() {
   };
 
   // Play! ( Testing ... )
-  Tetvas.start();
+  //Tetvas.start();
   return Tetvas;
 })();
