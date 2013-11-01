@@ -165,9 +165,6 @@ var Tetvas = (function() {
     // Set the fill
     this.fill = fill;
     this.borderColour = borderColour || BLOCK_BORDER_COLOUR;
-
-    // Draw the new block
-    this.draw();
   }
 
   Block.prototype.setPoint = function(pt) {
@@ -235,7 +232,7 @@ var Tetvas = (function() {
    * Piece class
    *******************************************************/
 
-  function Piece(shape) {
+  function Piece(shape, frozenBlocks) {
     /*
      * Make a new piece of the specified shape.
      * Shapes : I, O, T, J, L, S, Z
@@ -255,7 +252,7 @@ var Tetvas = (function() {
     this.points = [];
 
     // Initialize the ghost for this piece
-    this._initGhost();
+    this._initGhost(frozenBlocks);
 
     // Block objects that make up this piece
     this.blocks = [];
@@ -263,9 +260,9 @@ var Tetvas = (function() {
 
   }
 
-  Piece.prototype._initGhost = function() {
+  Piece.prototype._initGhost = function(frozenBlocks) {
     /* Initialize the ghost of the piece */
-    this.ghost = new Ghost(this.shape);
+    this.ghost = new Ghost(this.shape, frozenBlocks);
   };
 
   Piece.prototype._initBlocks = function() {
@@ -278,6 +275,8 @@ var Tetvas = (function() {
       this.points.push(newPoint);
       this.blocks.push(new Block(this.getCoords(newPoint), this.fill));
     }
+
+    this.draw();
   };
 
   Piece.prototype.getCoords = function(pt) {
@@ -287,6 +286,7 @@ var Tetvas = (function() {
 
   Piece.prototype.draw = function() {
     /* Draw the piece */
+
     for (var i = 0; i < this.blocks.length; ++i) {
       this.blocks[i].draw();
     }
@@ -344,9 +344,17 @@ var Tetvas = (function() {
     if (this.intersects(frozenBlocks)) {
       // It does intersect. Undo the move
       this.origin[axis] -= mag;
+
       this.updateBlocks();
       this.draw();
       return false;
+    }
+
+    // Move the ghost (if we have one)
+    if (this.ghost) {
+      this.ghost.moveUp(this.origin);
+      this.ghost._move(frozenBlocks, axis, mag);
+      this.ghost.reghost(frozenBlocks);
     }
 
     // No intersection
@@ -356,11 +364,9 @@ var Tetvas = (function() {
 
   /* Functions to move various directions */
   Piece.prototype.moveLeft = function(frozenBlocks) {
-    this.ghost && this.ghost.moveLeft(frozenBlocks);
     return this._move(frozenBlocks, 'x', -1);
   };
   Piece.prototype.moveRight = function(frozenBlocks) {
-    this.ghost && this.ghost.moveRight(frozenBlocks);
     return this._move(frozenBlocks, 'x', 1);
   };
 
@@ -400,8 +406,6 @@ var Tetvas = (function() {
   Piece.prototype._rotate = function(frozenBlocks, dir, recur) {
     /* Rotate the piece in the specified direction. */
 
-    this.ghost && this.ghost._rotate(frozenBlocks, dir, recur);
-
     // This one doesn't need to be rotated
     if (this.shape === 'O') return true;
 
@@ -435,6 +439,13 @@ var Tetvas = (function() {
       return false;
     }
 
+    if (this.ghost) {
+      // Rotate the ghost if we have one
+      this.ghost.moveUp(this.origin);
+      this.ghost._rotate(frozenBlocks, dir, recur);
+      this.ghost.reghost(frozenBlocks);
+    }
+
     // No intersection - return success
     this.draw();
     return true;
@@ -449,9 +460,10 @@ var Tetvas = (function() {
    * Ghost piece
    *******************************************************/
 
-  function Ghost(shape) {
+  function Ghost(shape, frozenBlocks) {
     // Inherit from Piece class
     Piece.call(this, shape);
+    this.reghost(frozenBlocks);
   }
   // We inherit from the Piece class, so we need to copy the prototype
   Ghost.prototype = Object.create(Piece.prototype);
@@ -467,6 +479,20 @@ var Tetvas = (function() {
       this.points.push(newPoint);
       this.blocks.push(new GhostBlock(this.getCoords(newPoint)));
     }
+  };
+
+  Ghost.prototype.moveUp = function(origin) {
+    // Move the ghost to where the original piece is from
+    this.origin.y = origin.y;
+  };
+
+  Ghost.prototype.reghost = function(frozenBlocks) {
+    // Undraw the blocks
+    this.undraw();
+
+    // Update the blocks to their new positions
+    this.updateBlocks();
+    while(this.moveDown(frozenBlocks));
   };
 
   /*******************************************************
@@ -527,7 +553,7 @@ var Tetvas = (function() {
     /* Move the piece down. Return true if successful move. */
     if (!this.piece.moveDown(this.frozenBlocks)) {
       this.piece.freeze(this.frozenBlocks);
-      this.piece = new Piece(this.getNextPiece());
+      this.piece = new Piece(this.getNextPiece(), this.frozenBlocks);
       return false;
     }
     return true;
@@ -581,8 +607,8 @@ var Tetvas = (function() {
 
     var self = this;
     // We listen to keydown event
-    document.addEventListener('keydown', function() {
-      self.keyStroke(event.keyCode);
+    document.addEventListener('keydown', function(e) {
+      self.keyStroke(e.keyCode);
     }, true);
 
   };
@@ -600,7 +626,7 @@ var Tetvas = (function() {
     this.registerListeners();
 
     // Create the first piece
-    this.piece = new Piece(this.getNextPiece());
+    this.piece = new Piece(this.getNextPiece(), this.frozenBlocks);
 
     // Start the ticker
     this.togglePause();
