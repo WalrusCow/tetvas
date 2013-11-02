@@ -439,8 +439,8 @@ var Tetvas = (function() {
       return false;
     }
 
-    if (this.ghost) {
-      // Rotate the ghost if we have one
+    if (this.ghost && !recur) {
+      // Rotate the ghost if we have one (but not if we failed the last time)
       this.ghost.moveUp(this.origin);
       this.ghost._rotate(frozenBlocks, dir, recur);
       this.ghost.reghost(frozenBlocks);
