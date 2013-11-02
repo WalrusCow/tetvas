@@ -93,41 +93,9 @@ var Tetvas = (function() {
     return arr;
   }
 
-  function undrawRow(row) {
-    /* Safely undraw a row (but not the edge blocks) */
-    for (var i = 0; i < 10; ++i) {
-      if (row[i] && row[i].undraw) row[i].undraw();
-    }
-  }
-
   function makeNewRow() {
     /* Create a new object with columns to represent a row */
     return { '-1' : true, '10' : true };
-  }
-
-  function clearRow(frozenBlocks, i) {
-    // Undraw the row
-    undrawRow(frozenBlocks[i]);
-
-    var rowToMove, newPoint;
-
-    // Move the rows above down by one
-    for (var j = i - 1; j >= 0 ; --j) {
-      rowToMove = frozenBlocks[j];
-
-      // Move each block in the row down one space
-      for (var k = 0; k < 10; ++k)  {
-        if (!rowToMove[k]) continue;
-        newPoint = rowToMove[k].gridPoint;
-        newPoint.y += 1;
-        rowToMove[k].move(newPoint);
-      }
-
-      // Update the object to point to the correct rows
-      frozenBlocks[j + 1] = rowToMove;
-      // Remove the row we just moved
-      frozenBlocks[j] = makeNewRow();
-    }
   }
 
   function copyPoint(pt) {
@@ -391,15 +359,7 @@ var Tetvas = (function() {
     }
 
     // We just want the keys
-    rows = Object.keys(rows);
-
-    // Check to see about removing lines
-    // We have to check each row to see if it's full
-    for (var i = 0; i < rows.length; ++i) {
-      if (rowFull(frozenBlocks[rows[i]])) {
-        clearRow(frozenBlocks, rows[i]);
-      }
-    }
+    return Object.keys(rows);
 
   };
 
@@ -549,10 +509,55 @@ var Tetvas = (function() {
     this.moveDown();
   };
 
+  Tetvas.checkFullRows = function(rows) {
+    // Check certain rows
+    // We have to check each row to see if it's full
+    for (var i = 0; i < rows.length; ++i) {
+      if (rowFull(this.frozenBlocks[rows[i]])) {
+        this.clearRow(rows[i]);
+      }
+    }
+  };
+
+  Tetvas.undrawRow = function(row) {
+    /* Safely undraw a row (but not the edge blocks) */
+    for (var i = 0; i < 10; ++i) {
+      if (row[i] && row[i].undraw) row[i].undraw();
+    }
+  }
+
+
+  Tetvas.clearRow = function(i) {
+    // Undraw the row
+    this.undrawRow(this.frozenBlocks[i]);
+
+    var rowToMove, newPoint;
+
+    // Move the rows above down by one
+    for (var j = i - 1; j >= 0 ; --j) {
+      rowToMove = this.frozenBlocks[j];
+
+      // Move each block in the row down one space
+      for (var k = 0; k < 10; ++k)  {
+        if (!rowToMove[k]) continue;
+        newPoint = rowToMove[k].gridPoint;
+        newPoint.y += 1;
+        rowToMove[k].move(newPoint);
+      }
+
+      // Update the object to point to the correct rows
+      this.frozenBlocks[j + 1] = rowToMove;
+      // Remove the row we just moved
+      this.frozenBlocks[j] = makeNewRow();
+    }
+  }
+
   Tetvas.moveDown = function() {
     /* Move the piece down. Return true if successful move. */
     if (!this.piece.moveDown(this.frozenBlocks)) {
-      this.piece.freeze(this.frozenBlocks);
+      var rows = this.piece.freeze(this.frozenBlocks);
+
+      this.checkFullRows(rows);
       this.piece = new Piece(this.getNextPiece(), this.frozenBlocks);
       return false;
     }
