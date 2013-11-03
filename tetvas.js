@@ -1,10 +1,4 @@
-/*
- * Grid should be 20 high and 10 across
- */
-
 var Tetvas = (function() {
-  // Encapsulate a game
-
   // Key constants
   var UP_ARROW = 38;
   var DOWN_ARROW = 40;
@@ -112,10 +106,6 @@ var Tetvas = (function() {
     }
     return true;
   }
-
-  /*******************************************************
-   * Useful classes
-   *******************************************************/
 
   /*******************************************************
    * Block class
@@ -456,40 +446,41 @@ var Tetvas = (function() {
   };
 
   /*******************************************************
-   * Main driver area
+   * Class for a game
    *******************************************************/
 
-  // Return object (game driver)
-  var Tetvas = {};
+  function Tetvas() {
 
-  // Initial speed
-  Tetvas.speed = START_SPEED;
+    // Initial speed
+    this.speed = START_SPEED;
 
-  // Boolean to indicate if the game is ongoing
-  Tetvas.playing = false;
+    // Boolean to indicate if the game is ongoing
+    this.playing = false;
 
-  // Initial index
-  Tetvas.pieceIndex = 0;
+    // Initial index
+    this.pieceIndex = 0;
 
-  // List of possible pieces to use to generate the next piece
-  Tetvas.pieceGen = [ 'I', 'O', 'T', 'J', 'L', 'S', 'Z'];
+    // List of possible pieces to use to generate the next piece
+    this.pieceGen = [ 'I', 'O', 'T', 'J', 'L', 'S', 'Z'];
 
-  // Blocks that have been frozen, organized by rows then columns
-  // We also have rows for the border, to make stopping the pieces
-  // at the border automatic
-  Tetvas.frozenBlocks = {};
+    // Blocks that have been frozen, organized by rows then columns
+    // We also have rows for the border, to make stopping the pieces
+    // at the border automatic
+    this.frozenBlocks = {};
 
-  // Build the rows
-  for (var i = -1; i < 21; ++i) {
-    Tetvas.frozenBlocks[i] = makeNewRow();
-  }
+    // Build the rows
+    for (var i = -1; i < 21; ++i) {
+      this.frozenBlocks[i] = makeNewRow();
+    }
 
-  // Build the bottom row (to stop blocks)
-  for (var i = 0; i < 10; ++i) {
-    Tetvas.frozenBlocks[20][i] = true;
-  }
+    // Build the bottom row (to stop blocks)
+    for (var i = 0; i < 10; ++i) {
+      this.frozenBlocks[20][i] = true;
+    }
 
-  Tetvas.getNextPiece = function() {
+  };
+
+  Tetvas.prototype.getNextPiece = function() {
     /* Get the next piece to generate */
     if (!this.pieceIndex) { shuffle(this.pieceGen); }
 
@@ -502,14 +493,14 @@ var Tetvas = (function() {
     return ret;
   };
 
-  Tetvas.tick = function() {
+  Tetvas.prototype.tick = function() {
     /* Function to represent one game tick */
 
     // More may be added later
     this.moveDown();
   };
 
-  Tetvas.checkFullRows = function(rows) {
+  Tetvas.prototype.checkFullRows = function(rows) {
     // Check certain rows
     // We have to check each row to see if it's full
     for (var i = 0; i < rows.length; ++i) {
@@ -519,15 +510,14 @@ var Tetvas = (function() {
     }
   };
 
-  Tetvas.undrawRow = function(row) {
+  Tetvas.prototype.undrawRow = function(row) {
     /* Safely undraw a row (but not the edge blocks) */
     for (var i = 0; i < 10; ++i) {
       if (row[i] && row[i].undraw) row[i].undraw();
     }
   }
 
-
-  Tetvas.clearRow = function(i) {
+  Tetvas.prototype.clearRow = function(i) {
     // Undraw the row
     this.undrawRow(this.frozenBlocks[i]);
 
@@ -552,7 +542,7 @@ var Tetvas = (function() {
     }
   }
 
-  Tetvas.moveDown = function() {
+  Tetvas.prototype.moveDown = function() {
     /* Move the piece down. Return true if successful move. */
     if (!this.piece.moveDown(this.frozenBlocks)) {
       var rows = this.piece.freeze(this.frozenBlocks);
@@ -564,7 +554,7 @@ var Tetvas = (function() {
     return true;
   };
 
-  Tetvas.keyStroke = function(key) {
+  Tetvas.prototype.keyStroke = function(key) {
     /* Handle a keystroke */
 
     switch(key) {
@@ -607,7 +597,7 @@ var Tetvas = (function() {
     }
   };
 
-  Tetvas.registerListeners = function() {
+  Tetvas.prototype.registerListeners = function() {
     /* Register the keyboard listener for the game. */
 
     var self = this;
@@ -618,7 +608,7 @@ var Tetvas = (function() {
 
   };
 
-  Tetvas.start = function() {
+  Tetvas.prototype.start = function() {
     /* Begin the game */
 
     // Don't start the game if it has already started
@@ -637,7 +627,7 @@ var Tetvas = (function() {
     this.togglePause();
   };
 
-  Tetvas.togglePause = function() {
+  Tetvas.prototype.togglePause = function() {
     /* Toggle game pause */
     var self = this;
 
@@ -654,7 +644,9 @@ var Tetvas = (function() {
     }
   };
 
-  // Play! ( Testing ... )
-  Tetvas.start();
   return Tetvas;
 })();
+
+// Play!
+var game = new Tetvas();
+game.start();
