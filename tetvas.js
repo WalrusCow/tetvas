@@ -6,6 +6,7 @@ var Tetvas = (function() {
   var RIGHT_ARROW = 39;
 
   var SPACE_BAR = 32;
+  var SHIFT_KEY = 16;
   var CTRL_KEY = 17;
 
   var P_KEY = 80;
@@ -245,6 +246,7 @@ var Tetvas = (function() {
   Piece.prototype.draw = function() {
     /* Draw the piece */
 
+    this.ghost && this.ghost.draw();
     for (var i = 0; i < this.blocks.length; ++i) {
       this.blocks[i].draw();
     }
@@ -255,6 +257,7 @@ var Tetvas = (function() {
     for (var i = 0; i < this.blocks.length; ++i) {
       this.blocks[i].undraw();
     }
+    this.ghost && this.ghost.undraw();
   };
 
   Piece.prototype.updateBlocks = function() {
@@ -547,6 +550,9 @@ var Tetvas = (function() {
     if (!this.piece.moveDown(this.frozenBlocks)) {
       var rows = this.piece.freeze(this.frozenBlocks);
 
+      // This piece just froze, so we can hold again
+      this.heldThisPiece = false;
+
       this.checkFullRows(rows);
       this.piece = new Piece(this.getNextPiece(), this.frozenBlocks);
       return false;
@@ -584,6 +590,10 @@ var Tetvas = (function() {
         this.piece.rotateLeft(this.frozenBlocks);
         break;
 
+      case SHIFT_KEY:
+        this.holdPiece();
+        break;
+
       // Hard drop
       case CTRL_KEY:
       case SPACE_BAR:
@@ -606,6 +616,23 @@ var Tetvas = (function() {
       self.keyStroke(e.keyCode);
     }, true);
 
+  };
+
+  Tetvas.prototype.holdPiece = function() {
+    // We can't keep holding repeatedly
+    if (this.heldThisPiece) return;
+
+    // Put the current piece on hold
+    var temp = this.hold || {};
+    this.hold = this.piece;
+    this.piece.undraw();
+
+    // Create a new piece (it's easier to just throw out the old one)
+    var pieceShape = temp.shape || this.getNextPiece();
+    this.piece = new Piece(pieceShape, this.frozenBlocks);
+
+    // We can only hold a piece once
+    this.heldThisPiece = true;
   };
 
   Tetvas.prototype.start = function() {
