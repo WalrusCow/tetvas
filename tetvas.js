@@ -15,6 +15,10 @@ var Tetvas = (function() {
 
   // Constants for Blocks
   var GRID_SIZE = 15;
+  var GRID_OFFSET = {
+    x : { start : 60, end : 60 },
+    y : { start : 2, end : 2}
+  };
   var BLOCK_BORDER_COLOUR = '#000000';
   var GHOST_BORDER_COLOUR = '#ffffff';
   var GHOST_FILL = '#c3c3c3';
@@ -54,6 +58,39 @@ var Tetvas = (function() {
   /*******************************************************
    * Utility functions
    *******************************************************/
+
+  function drawBorder() {
+    /* Draw the border for the game. */
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+
+    // 1 is half the line width, so there is no overlap
+    var y = {
+      min : GRID_OFFSET.y.start - 1,
+      max : canvas.height - GRID_OFFSET.y.start + 1
+    };
+    var x = {
+      min : GRID_OFFSET.x.start - 1,
+      max : canvas.width - GRID_OFFSET.x.start + 1
+    };
+
+    // Left border
+    ctx.moveTo(x.min, y.min);
+    ctx.lineTo(x.min, y.max);
+
+    // Bottom border
+    ctx.lineTo(x.max, y.max);
+
+    // Right boder
+    ctx.lineTo(x.max, y.min);
+
+    ctx.stroke();
+    ctx.closePath();
+  }
+
+  // We initially draw the border
+  drawBorder();
 
   function nop() {};
 
@@ -129,8 +166,8 @@ var Tetvas = (function() {
   Block.prototype.setPoint = function(pt) {
     /* Set new point for the block */
     this.gridPoint = copyPoint(pt);
-    this._x = GRID_SIZE * this.gridPoint.x;
-    this._y = GRID_SIZE * this.gridPoint.y;
+    this._x = GRID_SIZE * this.gridPoint.x + GRID_OFFSET.x.start;
+    this._y = GRID_SIZE * this.gridPoint.y + GRID_OFFSET.y.start;
   };
 
   Block.prototype.undraw = function() {
