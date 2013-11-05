@@ -1,5 +1,6 @@
 requirejs.config({
-  baseUrl : 'scripts'
+  baseUrl : 'scripts/tetvas',
+  paths : { 'require' : '..' }
 });
 
 requirejs(['tetvas'], function(Tetvas) {

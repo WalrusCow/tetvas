@@ -1,13 +1,9 @@
-var Tetvas = (function() {
-
-  /*******************************************************
-   * Class for a game
-   *******************************************************/
+define(['globals', 'util', 'blocks/block', 'pieces/piece'], function(util, Block, Piece) {
 
   function Tetvas() {
 
     // Initial speed
-    this.speed = START_SPEED;
+    this.speed = globals.START_SPEED;
 
     // Boolean to indicate if the game is ongoing
     this.playing = false;
@@ -16,7 +12,7 @@ var Tetvas = (function() {
     this.pieceIndex = 0;
 
     // List of possible pieces to use to generate the next piece
-    this.pieceGen = [ 'I', 'O', 'T', 'J', 'L', 'S', 'Z'];
+    this.pieceGen = [ 'I', 'O', 'T', 'J', 'L', 'S', 'Z' ];
 
     // Blocks that have been frozen, organized by rows then columns
     // We also have rows for the border, to make stopping the pieces
@@ -25,7 +21,7 @@ var Tetvas = (function() {
 
     // Build the rows
     for (var i = -1; i < 21; ++i) {
-      this.frozenBlocks[i] = makeNewRow();
+      this.frozenBlocks[i] = util.makeNewRow();
     }
 
     // Build the bottom row (to stop blocks)
@@ -37,7 +33,7 @@ var Tetvas = (function() {
 
   Tetvas.prototype.getNextPiece = function() {
     /* Get the next piece to generate */
-    if (!this.pieceIndex) { shuffle(this.pieceGen); }
+    if (!this.pieceIndex) { util.shuffle(this.pieceGen); }
 
     var ret = this.pieceGen[this.pieceIndex];
 
@@ -59,7 +55,7 @@ var Tetvas = (function() {
     // Check certain rows
     // We have to check each row to see if it's full
     for (var i = 0; i < rows.length; ++i) {
-      if (rowFull(this.frozenBlocks[rows[i]])) {
+      if (util.rowFull(this.frozenBlocks[rows[i]])) {
         this.clearRow(rows[i]);
       }
     }
@@ -93,7 +89,7 @@ var Tetvas = (function() {
       // Update the object to point to the correct rows
       this.frozenBlocks[j + 1] = rowToMove;
       // Remove the row we just moved
-      this.frozenBlocks[j] = makeNewRow();
+      this.frozenBlocks[j] = util.makeNewRow();
     }
   }
 
@@ -117,43 +113,43 @@ var Tetvas = (function() {
 
     switch(key) {
       // Move piece left
-      case LEFT_ARROW:
+      case globals.LEFT_ARROW:
         this.piece.moveLeft(this.frozenBlocks);
         break;
 
       // Move piece right
-      case RIGHT_ARROW:
+      case globals.RIGHT_ARROW:
         this.piece.moveRight(this.frozenBlocks);
         break;
 
       // Move piece down
-      case DOWN_ARROW:
+      case globals.DOWN_ARROW:
         this.piece.moveDown(this.frozenBlocks);
         break;
 
       // Rotate CW
-      case UP_ARROW:
-      case X_KEY:
+      case globals.UP_ARROW:
+      case globals.X_KEY:
         this.piece.rotateRight(this.frozenBlocks);
         break;
 
       // Rotate CCW
-      case Z_KEY:
+      case globals.Z_KEY:
         this.piece.rotateLeft(this.frozenBlocks);
         break;
 
-      case SHIFT_KEY:
+      case globals.SHIFT_KEY:
         this.holdPiece();
         break;
 
       // Hard drop
-      case CTRL_KEY:
-      case SPACE_BAR:
+      case globals.CTRL_KEY:
+      case globals.SPACE_BAR:
         while(this.moveDown());
         break;
 
       // Pause game
-      case P_KEY:
+      case globals.P_KEY:
         this.togglePause();
         break;
     }
@@ -233,4 +229,4 @@ var Tetvas = (function() {
   };
 
   return Tetvas;
-})();
+});
