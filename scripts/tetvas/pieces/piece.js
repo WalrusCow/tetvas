@@ -241,4 +241,6 @@ define(['require'], function(require) {
   Piece.prototype.rotateRight = function(frozenBlocks) { this._rotate(frozenBlocks, 1); };
   Piece.prototype.rotateLeft = function(frozenBlocks) { this._rotate(frozenBlocks, -1); };
 
+  return Piece;
+
 });
