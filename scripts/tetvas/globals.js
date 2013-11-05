@@ -4,7 +4,7 @@
 
 define([], function() {
 
-  Globals.Globals = {};
+  var Globals = {};
 
   // Canvases to use
   Globals.canvas = document.getElementById('tetvas');
