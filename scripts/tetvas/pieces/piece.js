@@ -24,22 +24,19 @@ define(['require', 'globals', 'util', 'blocks/block'],
     // Points for the piece
     this.points = [];
 
-    // Initialize the ghost for this piece
-    this._initGhost(frozenBlocks);
-
     // Block objects that make up this piece
     this.blocks = [];
-    this._initBlocks();
+    this.initBlocks(frozenBlocks);
 
   }
 
-  Piece.prototype._initGhost = function(frozenBlocks) {
-    /* Initialize the ghost of the piece */
-
-    // We need to require the ghost piece (circular)
+  Piece.prototype.initBlocks = function(frozenBlocks) {
     var self = this;
+    // We need to make sure the the blocks for this piece
+    // are initialized AFTER the ghost is
     require(['pieces/ghostPiece'], function(GhostPiece) {
       self.ghost = new GhostPiece(self.shape, frozenBlocks);
+      self._initBlocks();
     });
   };
 

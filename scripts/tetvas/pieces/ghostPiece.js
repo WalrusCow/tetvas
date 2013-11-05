@@ -14,10 +14,7 @@ define(['util', 'globals', 'blocks/ghostBlock', 'pieces/piece'],
   // We inherit from the Piece class, so we need to copy the prototype
   GhostPiece.prototype = Object.create(Piece.prototype);
 
-  // We don't want to initialize a ghost here
-  GhostPiece.prototype._initGhost = util.nop;
-
-  GhostPiece.prototype._initBlocks = function() {
+  GhostPiece.prototype.initBlocks = function() {
     // Copy initial points
     var pts = globals.SHAPE_POINTS[this.shape];
     for (var i = 0; i < pts.length; ++i) {
