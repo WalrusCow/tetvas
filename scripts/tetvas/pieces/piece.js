@@ -2,19 +2,8 @@
  * Piece class
  *******************************************************/
 
-define(['require'], function(require) {
-
-  // Initial points (relative to piece origin) for each shape
-  // These completely define the shapes
-  var SHAPE_POINTS = {
-    'I' : [ { x:0, y:0 }, { x:1, y:0 }, { x:-1, y:0 }, { x:2, y:0 } ],
-    'O' : [ { x:0, y:0 }, { x:1, y:0 }, { x:0, y:-1 }, { x:1, y:-1 } ],
-    'T' : [ { x:0, y:0 }, { x:-1, y:0 }, { x:0, y:-1 }, { x:1, y:0 } ],
-    'J' : [ { x:0, y:0 }, { x:-1, y:0 }, { x:-1, y:-1 }, { x:1, y:0 } ],
-    'L' : [ { x:0, y:0 }, { x:-1, y:0 }, { x:1, y:-1 }, { x:1, y:0 } ],
-    'S' : [ { x:0, y:0 }, { x:-1, y:0 }, { x:0, y:-1 }, { x:1, y:-1 } ],
-    'Z' : [ { x:0, y:0 }, { x:1, y:0 }, { x:0, y:-1 }, { x:-1, y:-1 } ]
-  };
+define(['require', 'globals', 'util', 'blocks/block'],
+    function(require, globals, util, Block) {
 
   function Piece(shape, frozenBlocks) {
     /*
@@ -22,13 +11,8 @@ define(['require'], function(require) {
      * Shapes : I, O, T, J, L, S, Z
      */
 
-    var Ghost;
-    require(['Ghost'], function(g) {
-      Ghost = g;
-    });
-
     // Colour of this piece
-    this.fill = SHAPE_FILLS[shape];
+    this.fill = globals.SHAPE_FILLS[shape];
 
     // Shape of piece
     this.shape = shape;
@@ -53,16 +37,19 @@ define(['require'], function(require) {
     /* Initialize the ghost of the piece */
 
     // We need to require the ghost piece (circular)
-    this.ghost = new Ghost(this.shape, frozenBlocks);
+    var self = this;
+    require(['pieces/ghostPiece'], function(GhostPiece) {
+      self.ghost = new GhostPiece(self.shape, frozenBlocks);
+    });
   };
 
   Piece.prototype._initBlocks = function() {
     /* Initialize the blocks */
 
     // Copy initial points
-    var pts = SHAPE_POINTS[this.shape];
+    var pts = globals.SHAPE_POINTS[this.shape];
     for (var i = 0; i < pts.length; ++i) {
-      var newPoint = copyPoint(pts[i]);
+      var newPoint = util.copyPoint(pts[i]);
       this.points.push(newPoint);
       this.blocks.push(new Block(this.getCoords(newPoint), this.fill));
     }

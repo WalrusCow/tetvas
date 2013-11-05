@@ -2,11 +2,12 @@
  * Class to represent a ghost piece
  *******************************************************/
 
-define(['pieces/piece'], function(Piece) {
+define(['util', 'globals', 'blocks/ghostBlock', 'pieces/piece'],
+    function(util, globals, GhostBlock, Piece) {
 
   function GhostPiece(shape, frozenBlocks) {
     // Inherit from Piece class
-    Piece.call(this, shape);
+    Piece.call(this, shape, frozenBlocks);
     this.reghost(frozenBlocks);
   }
 
@@ -14,15 +15,15 @@ define(['pieces/piece'], function(Piece) {
   GhostPiece.prototype = Object.create(Piece.prototype);
 
   // We don't want to initialize a ghost here
-  GhostPiece.prototype._initGhostPiece = nop;
+  GhostPiece.prototype._initGhost = util.nop;
 
   GhostPiece.prototype._initBlocks = function() {
     // Copy initial points
-    var pts = SHAPE_POINTS[this.shape];
+    var pts = globals.SHAPE_POINTS[this.shape];
     for (var i = 0; i < pts.length; ++i) {
-      var newPoint = copyPoint(pts[i]);
+      var newPoint = util.copyPoint(pts[i]);
       this.points.push(newPoint);
-      this.blocks.push(new GhostPieceBlock(this.getCoords(newPoint)));
+      this.blocks.push(new GhostBlock(this.getCoords(newPoint)));
     }
   };
 

@@ -19,14 +19,14 @@ define(['util', 'globals'], function(util, globals) {
 
   Block.prototype.setPoint = function(pt) {
     /* Set new point for the block */
-    this.gridPoint = copyPoint(pt);
+    this.gridPoint = util.copyPoint(pt);
     this._x = globals.GRID_SIZE * this.gridPoint.x + globals.GRID_OFFSET.x.start;
     this._y = globals.GRID_SIZE * this.gridPoint.y + globals.GRID_OFFSET.y.start;
   };
 
   Block.prototype.undraw = function() {
     /* Clear the block from the canvas */
-    ctx.clearRect(this._x, this._y, globals.GRID_SIZE, globals.GRID_SIZE);
+    globals.ctx.clearRect(this._x, this._y, globals.GRID_SIZE, globals.GRID_SIZE);
   };
 
   Block.prototype.draw = function() {
@@ -37,16 +37,16 @@ define(['util', 'globals'], function(util, globals) {
      */
 
     // Draw border square
-    ctx.fillStyle = this.borderColour;
-    ctx.fillRect(this._x, this._y, globals.GRID_SIZE, globals.GRID_SIZE);
+    globals.ctx.fillStyle = this.borderColour;
+    globals.ctx.fillRect(this._x, this._y, globals.GRID_SIZE, globals.GRID_SIZE);
 
     // Offset for the border
     var fillPt = { x : this._x + BORDER_WIDTH, y : this._y + BORDER_WIDTH };
     var fillSize = globals.GRID_SIZE - (2 * BORDER_WIDTH);
 
     // Draw fill square
-    ctx.fillStyle = this.fill;
-    ctx.fillRect(fillPt.x, fillPt.y, fillSize, fillSize);
+    globals.ctx.fillStyle = this.fill;
+    globals.ctx.fillRect(fillPt.x, fillPt.y, fillSize, fillSize);
   };
 
   Block.prototype.move = function(pt) {

@@ -45,5 +45,18 @@ define([], function() {
     'Z' : '#ff0000'
   };
 
+  // Initial points (relative to piece origin) for each shape
+  // These completely define the shapes
+  Globals.SHAPE_POINTS = {
+    'I' : [ { x:0, y:0 }, { x:1, y:0 }, { x:-1, y:0 }, { x:2, y:0 } ],
+    'O' : [ { x:0, y:0 }, { x:1, y:0 }, { x:0, y:-1 }, { x:1, y:-1 } ],
+    'T' : [ { x:0, y:0 }, { x:-1, y:0 }, { x:0, y:-1 }, { x:1, y:0 } ],
+    'J' : [ { x:0, y:0 }, { x:-1, y:0 }, { x:-1, y:-1 }, { x:1, y:0 } ],
+    'L' : [ { x:0, y:0 }, { x:-1, y:0 }, { x:1, y:-1 }, { x:1, y:0 } ],
+    'S' : [ { x:0, y:0 }, { x:-1, y:0 }, { x:0, y:-1 }, { x:1, y:-1 } ],
+    'Z' : [ { x:0, y:0 }, { x:1, y:0 }, { x:0, y:-1 }, { x:-1, y:-1 } ]
+  };
+
+
   return Globals;
 });
