@@ -16,7 +16,7 @@ var Tetvas = (function() {
   // Constants for Blocks
   var GRID_SIZE = 15;
   var GRID_OFFSET = {
-    x : { start : 60, end : 60 },
+    x : { start : 90, end : 90 },
     y : { start : 2, end : 2}
   };
   var BLOCK_BORDER_COLOUR = '#000000';
@@ -661,12 +661,21 @@ var Tetvas = (function() {
 
     // Put the current piece on hold
     var temp = this.hold || {};
+    this.hold && this.hold.undraw();
     this.hold = this.piece;
     this.piece.undraw();
 
     // Create a new piece (it's easier to just throw out the old one)
     var pieceShape = temp.shape || this.getNextPiece();
     this.piece = new Piece(pieceShape, this.frozenBlocks);
+
+    // We don't want it to have a ghost anymore
+    delete this.hold.ghost;
+
+    // Put it off to the side
+    this.hold.origin = { x : -4, y : 4 };
+    this.hold.updateBlocks();
+    this.hold.draw();
 
     // We can only hold a piece once
     this.heldThisPiece = true;
