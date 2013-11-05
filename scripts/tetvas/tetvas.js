@@ -228,5 +228,7 @@ define(['globals', 'util', 'blocks/block', 'pieces/piece'], function(globals, ut
     }
   };
 
+  util.drawBorder();
+
   return Tetvas;
 });

@@ -8,7 +8,7 @@ define([], function() {
 
   // Canvases to use
   Globals.canvas = document.getElementById('tetvas');
-  Globals.ctx = canvas.getContext('2d');
+  Globals.ctx = Globals.canvas.getContext('2d');
 
   // Key constants
   Globals.UP_ARROW = 38;

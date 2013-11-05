@@ -5,6 +5,10 @@
 define(['globals'], function(globals) {
   var Util = {};
 
+  // For shorthand
+  var ctx = globals.ctx;
+  var canvas = globals.canvas;
+
   Util.drawBorder = function() {
     /* Draw the border for the game. */
     ctx.strokeStyle = '#000000';
@@ -34,9 +38,6 @@ define(['globals'], function(globals) {
     ctx.stroke();
     ctx.closePath();
   };
-
-  // We initially draw the border
-  drawBorder();
 
   Util.nop = function() {};
 
