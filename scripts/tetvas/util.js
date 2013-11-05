@@ -2,7 +2,7 @@
  * Utility functions
  *******************************************************/
 
-define(['globals'], function(Globals) {
+define(['globals'], function(globals) {
   var Util = {};
 
   Util.drawBorder = function() {
@@ -13,12 +13,12 @@ define(['globals'], function(Globals) {
 
     // 1 is half the line width, so there is no overlap
     var y = {
-      min : Globals.GRID_OFFSET.y.start - 1,
-      max : canvas.height - Globals.GRID_OFFSET.y.start + 1
+      min : globals.GRID_OFFSET.y.start - 1,
+      max : canvas.height - globals.GRID_OFFSET.y.start + 1
     };
     var x = {
-      min : Globals.GRID_OFFSET.x.start - 1,
-      max : canvas.width - Globals.GRID_OFFSET.x.start + 1
+      min : globals.GRID_OFFSET.x.start - 1,
+      max : canvas.width - globals.GRID_OFFSET.x.start + 1
     };
 
     // Left border

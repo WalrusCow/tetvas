@@ -1,4 +1,4 @@
-define(['globals', 'util', 'blocks/block', 'pieces/piece'], function(util, Block, Piece) {
+define(['globals', 'util', 'blocks/block', 'pieces/piece'], function(globals, util, Block, Piece) {
 
   function Tetvas() {
 
