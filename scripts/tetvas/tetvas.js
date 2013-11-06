@@ -1,5 +1,8 @@
 define(['globals', 'util', 'blocks/block', 'pieces/piece'], function(globals, util, Block, Piece) {
 
+  var GAME_OVER_TEXT = 'Game Over';
+  var GAME_TEXT_POINT = { x : 165, y : 130 };
+
   function Tetvas() {
 
     // Initial speed
@@ -102,10 +105,38 @@ define(['globals', 'util', 'blocks/block', 'pieces/piece'], function(globals, ut
       this.heldThisPiece = false;
 
       this.checkFullRows(rows);
-      this.piece = new Piece(this.getNextPiece(), this.frozenBlocks);
+      this.piece = this.createPiece();
       return false;
     }
     return true;
+  };
+
+  Tetvas.prototype.createPiece = function() {
+    /* Create a new piece for the game. Return null if it intersects. */
+    var piece = new Piece(this.getNextPiece(), this.frozenBlocks);
+    // Check for game over
+    var self = this;
+    // Weird timeout hack because of asynchronous require.js
+    // loading ghost blocks
+    // TODO : Change the piece/ghostpiece dependency to be
+    // async in the ghostpiece, not the piece, to remove
+    // some of the hacky stuff for async
+    setTimeout(function() {
+      if (piece.intersects(self.frozenBlocks)) self.gameOver();
+    }, 100);
+    return piece;
+  };
+
+  Tetvas.prototype.gameOver = function() {
+    /* Do the game over stuff. */
+
+    var ctx = globals.ctx;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'bottom';
+    ctx.font = 'bold 24px sans-serif';
+    ctx.fillStyle = '#000000';
+    ctx.fillText(GAME_OVER_TEXT, GAME_TEXT_POINT.x, GAME_TEXT_POINT.y);
+    window.clearInterval(this.gameTicker);
   };
 
   Tetvas.prototype.keyStroke = function(key) {
@@ -178,7 +209,7 @@ define(['globals', 'util', 'blocks/block', 'pieces/piece'], function(globals, ut
 
     // Create a new piece (it's easier to just throw out the old one)
     var pieceShape = temp.shape || this.getNextPiece();
-    this.piece = new Piece(pieceShape, this.frozenBlocks);
+    this.piece = this.createPiece();
 
     // We don't want it to have a ghost anymore
     delete this.hold.ghost;
@@ -205,7 +236,7 @@ define(['globals', 'util', 'blocks/block', 'pieces/piece'], function(globals, ut
     this.registerListeners();
 
     // Create the first piece
-    this.piece = new Piece(this.getNextPiece(), this.frozenBlocks);
+    this.piece = this.createPiece();
 
     // Start the ticker
     this.togglePause();

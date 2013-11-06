@@ -34,6 +34,7 @@ define(['require', 'globals', 'util', 'blocks/block'],
     var self = this;
     // We need to make sure the the blocks for this piece
     // are initialized AFTER the ghost is
+    // TODO : Move the dependency to ghostPiece to remove hackyness
     require(['pieces/ghostPiece'], function(GhostPiece) {
       self.ghost = new GhostPiece(self.shape, frozenBlocks);
       self._initBlocks();
