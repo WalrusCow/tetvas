@@ -88,9 +88,7 @@ define(['require', 'globals', 'util', 'blocks/block'],
 
 
   Piece.prototype.intersects = function(frozenBlocks) {
-    /*
-     * Determine if this piece intersects any frozen blocks
-     */
+    /* Determine if this piece intersects any frozen blocks */
 
     for (var i = 0; i < this.blocks.length; ++i) {
       var coords = this.blocks[i].gridPoint;
