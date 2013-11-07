@@ -111,9 +111,9 @@ define(['globals', 'util', 'blocks/block', 'pieces/piece'], function(globals, ut
     return true;
   };
 
-  Tetvas.prototype.createPiece = function() {
+  Tetvas.prototype.createPiece = function(shape) {
     /* Create a new piece for the game. Return null if it intersects. */
-    var piece = new Piece(this.getNextPiece(), this.frozenBlocks);
+    var piece = new Piece(shape || this.getNextPiece(), this.frozenBlocks);
     // Check for game over
     var self = this;
     // Weird timeout hack because of asynchronous require.js
@@ -209,7 +209,7 @@ define(['globals', 'util', 'blocks/block', 'pieces/piece'], function(globals, ut
 
     // Create a new piece (it's easier to just throw out the old one)
     var pieceShape = temp.shape || this.getNextPiece();
-    this.piece = this.createPiece();
+    this.piece = this.createPiece(pieceShape);
 
     // We don't want it to have a ghost anymore
     delete this.hold.ghost;
