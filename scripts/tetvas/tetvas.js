@@ -15,7 +15,10 @@ define(['globals', 'util', 'blocks/block', 'pieces/piece'], function(globals, ut
     this.pieceIndex = 0;
 
     // List of possible pieces to use to generate the next piece
-    this.pieceGen = [ 'I', 'O', 'T', 'J', 'L', 'S', 'Z' ];
+    this.pieceGen = util.shuffle(Object.keys(globals.SHAPE_FILLS));
+
+    // The next pieces to generate
+    this.nextPieces = util.shuffle(this.pieceGen.slice());
 
     // Blocks that have been frozen, organized by rows then columns
     // We also have rows for the border, to make stopping the pieces
@@ -36,15 +39,18 @@ define(['globals', 'util', 'blocks/block', 'pieces/piece'], function(globals, ut
 
   Tetvas.prototype.getNextPiece = function() {
     /* Get the next piece to generate */
-    if (!this.pieceIndex) { util.shuffle(this.pieceGen); }
 
-    var ret = this.pieceGen[this.pieceIndex];
+    // If there are no more pieces in the generator then refill it
+    if (!this.pieceGen.length) {
+      this.pieceGen = util.shuffle(this.nextPieces.slice());
+    }
 
-    // Increment index;
-    this.pieceIndex += 1;
-    this.pieceIndex %= this.pieceGen.length;
+    // Add new piece to the front
+    this.nextPieces.unshift(this.pieceGen.pop());
 
-    return ret;
+    // Pop and return next piece
+    return this.nextPieces.pop();
+
   };
 
   Tetvas.prototype.tick = function() {
