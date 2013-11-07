@@ -201,6 +201,8 @@ define(['globals', 'util', 'blocks/block', 'pieces/piece'], function(globals, ut
   };
 
   Tetvas.prototype.holdPiece = function() {
+    /* Put a piece on hold for later use. */
+    // TODO: Make sure piece is NOT rotated when holding
     // We can't keep holding repeatedly
     if (this.heldThisPiece) return;
 
