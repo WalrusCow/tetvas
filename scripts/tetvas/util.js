@@ -9,7 +9,11 @@ define(['globals'], function(globals) {
   var ctx = globals.ctx;
   var canvas = globals.canvas;
 
-  Util.drawBorder = function() {
+  Util.clearCanvas = function() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  };
+
+  Util.drawBorders = function() {
     /* Draw the border for the game. */
     ctx.strokeStyle = '#000000';
     ctx.lineWidth = 2;

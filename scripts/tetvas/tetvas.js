@@ -11,14 +11,11 @@ define(['globals', 'util', 'blocks/block', 'pieces/piece'], function(globals, ut
     // Boolean to indicate if the game is ongoing
     this.playing = false;
 
-    // Initial index
-    this.pieceIndex = 0;
-
     // List of possible pieces to use to generate the next piece
-    this.pieceGen = util.shuffle(Object.keys(globals.SHAPE_FILLS));
+    this._pieceGen = util.shuffle(Object.keys(globals.SHAPE_FILLS));
 
     // The next pieces to generate
-    this.nextPieces = util.shuffle(this.pieceGen.slice());
+    this.nextPieces = util.shuffle(this._pieceGen.slice());
 
     // Blocks that have been frozen, organized by rows then columns
     // We also have rows for the border, to make stopping the pieces
@@ -41,12 +38,12 @@ define(['globals', 'util', 'blocks/block', 'pieces/piece'], function(globals, ut
     /* Get the next piece to generate */
 
     // If there are no more pieces in the generator then refill it
-    if (!this.pieceGen.length) {
-      this.pieceGen = util.shuffle(this.nextPieces.slice());
+    if (!this._pieceGen.length) {
+      this._pieceGen = util.shuffle(this.nextPieces.slice());
     }
 
     // Add new piece to the front
-    this.nextPieces.unshift(this.pieceGen.pop());
+    this.nextPieces.unshift(this._pieceGen.pop());
 
     // Pop and return next piece
     return this.nextPieces.pop();
@@ -235,6 +232,9 @@ define(['globals', 'util', 'blocks/block', 'pieces/piece'], function(globals, ut
     // Don't start the game if it has already started
     if (this.playing) return;
 
+    // Initialize the playing space
+    this._initCanvas();
+
     // Start the game
     var self = this;
     this.playing = true;
@@ -265,7 +265,10 @@ define(['globals', 'util', 'blocks/block', 'pieces/piece'], function(globals, ut
     }
   };
 
-  util.drawBorder();
+  Tetvas.prototype._initCanvas = function() {
+    util.clearCanvas();
+    util.drawBorders();
+  };
 
   return Tetvas;
 });
