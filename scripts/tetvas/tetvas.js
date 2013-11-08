@@ -11,6 +11,8 @@ define(['globals', 'util', 'blocks/block', 'pieces/piece'], function(globals, ut
     // Boolean to indicate if the game is ongoing
     this.playing = false;
 
+    this.gameTicker = null;
+
     // List of possible pieces to use to generate the next piece
     this._pieceGen = util.shuffle(Object.keys(globals.SHAPE_FILLS));
 
@@ -133,6 +135,7 @@ define(['globals', 'util', 'blocks/block', 'pieces/piece'], function(globals, ut
   Tetvas.prototype.gameOver = function() {
     /* Do the game over stuff. */
 
+    console.log(this.frozenBlocks);
     var ctx = globals.ctx;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'bottom';
@@ -140,6 +143,8 @@ define(['globals', 'util', 'blocks/block', 'pieces/piece'], function(globals, ut
     ctx.fillStyle = '#000000';
     ctx.fillText(GAME_OVER_TEXT, GAME_TEXT_POINT.x, GAME_TEXT_POINT.y);
     window.clearInterval(this.gameTicker);
+    document.removeEventListener('keydown', this._keydown, true);
+    Tetvas.call(this);
   };
 
   Tetvas.prototype.keyStroke = function(key) {
@@ -194,9 +199,13 @@ define(['globals', 'util', 'blocks/block', 'pieces/piece'], function(globals, ut
 
     var self = this;
     // We listen to keydown event
-    document.addEventListener('keydown', function(e) {
-      self.keyStroke(e.keyCode);
-    }, true);
+    this._keydown = function(e) { self.keyStroke(e.keyCode); };
+    document.addEventListener('keydown', this._keydown, true);
+
+    var startButton = document.getElementById('tetvas-start');
+    startButton.addEventListener('click', function(e) {
+      self.start();
+    });
 
   };
 
