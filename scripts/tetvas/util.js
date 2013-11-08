@@ -96,6 +96,39 @@ define(['globals'], function(globals) {
     return true;
   };
 
+  Util.throttle = function(f, timeout, thisArg) {
+    /*
+     * Return a new function that is a wrapper for `f` such that
+     * `f` will not be called more often than `timeout` milliseconds.
+     * `f` will be called with `thisArg` as `this`.
+     */
+
+    // Default to window
+    thisArg = thisArg || window;
+
+    // Boolean if timeout is clear
+    var active = true;
+
+    function wrapper() {
+      var args = Array.prototype.slice.call(arguments);
+
+      // Not active yet so we perform a no-op
+      if (!active) return;
+
+      // We were active so now we are not
+      active = false;
+
+      // After timeout make this active again
+      setTimeout(function() { active = true; }, timeout);
+
+      // Call original function
+      f.apply(thisArg, args);
+    };
+
+    return wrapper;
+
+  };
+
   return Util;
 
 });
