@@ -8,20 +8,17 @@ define(['util', 'globals', 'blocks/ghostBlock', 'pieces/piece'],
   function GhostPiece(shape, frozenBlocks) {
     // Inherit from Piece class
     Piece.call(this, shape, frozenBlocks);
+
+    // Inherit!
+    this._super = Piece.prototype;
     this.reghost(frozenBlocks);
   }
 
   // We inherit from the Piece class, so we need to copy the prototype
   GhostPiece.prototype = Object.create(Piece.prototype);
 
-  GhostPiece.prototype.initBlocks = function() {
-    // Copy initial points
-    var pts = globals.SHAPE_POINTS[this.shape];
-    for (var i = 0; i < pts.length; ++i) {
-      var newPoint = util.copyPoint(pts[i]);
-      this.points.push(newPoint);
-      this.blocks.push(new GhostBlock(this.getCoords(newPoint)));
-    }
+  GhostPiece.prototype._initBlock = function(coords) {
+    this.blocks.push(new GhostBlock(coords));
   };
 
   GhostPiece.prototype.moveUp = function(origin) {
