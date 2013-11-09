@@ -1,4 +1,5 @@
-define(['globals', 'util', 'pieces/gamePiece'], function(globals, util, GamePiece) {
+define(['globals', 'util', 'pieces/gamePiece', 'pieces/basePiece'],
+    function(globals, util, GamePiece, BasePiece) {
 
   var GAME_OVER_TEXT = 'Game Over';
   var GAME_TEXT_POINT = { x : 165, y : 130 };
@@ -120,15 +121,7 @@ define(['globals', 'util', 'pieces/gamePiece'], function(globals, util, GamePiec
     /* Create a new piece for the game. Return null if it intersects. */
     var piece = new GamePiece(shape || this.getNextPiece(), this.frozenBlocks);
     // Check for game over
-    var self = this;
-    // Weird timeout hack because of asynchronous require.js
-    // loading ghost blocks
-    // TODO : Change the piece/ghostpiece dependency to be
-    // async in the ghostpiece, not the piece, to remove
-    // some of the hacky stuff for async
-    setTimeout(function() {
-      if (piece.intersects(self.frozenBlocks)) self.gameOver();
-    }, 100);
+    if (piece.intersects(this.frozenBlocks)) this.gameOver();
     return piece;
   };
 
@@ -211,25 +204,25 @@ define(['globals', 'util', 'pieces/gamePiece'], function(globals, util, GamePiec
 
   Tetvas.prototype.holdPiece = function() {
     /* Put a piece on hold for later use. */
-    // TODO: Make sure piece is NOT rotated when holding
+
     // We can't keep holding repeatedly
     if (this.heldThisPiece) return;
 
     // Put the current piece on hold
     var temp = this.hold || {};
+
     this.hold && this.hold.undraw();
-    this.hold = this.piece;
+    this.hold = new BasePiece(this.piece.shape);
+
+    // Undraw current piece
     this.piece.undraw();
 
-    // Create a new piece (it's easier to just throw out the old one)
+    // Create a new piece
     var pieceShape = temp.shape || this.getNextPiece();
     this.piece = this.createPiece(pieceShape);
 
-    // We don't want it to have a ghost anymore
-    delete this.hold.ghost;
-
     // Put it off to the side
-    this.hold.origin = { x : -4, y : 4 };
+    this.hold._origin = { x : -4, y : 4 };
     this.hold.updateBlocks();
     this.hold.draw();
 
