@@ -78,6 +78,8 @@ define(['pieces/basePiece', 'pieces/ghostPiece'],
       this.ghost.drop(frozenBlocks);
     }
 
+    this.draw();
+
     return success;
   };
 
