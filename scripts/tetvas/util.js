@@ -96,6 +96,15 @@ define(['globals'], function(globals) {
     return true;
   };
 
+  Util.writeText = function(text, coords) {
+    var ctx = globals.ctx;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'bottom';
+    ctx.font = 'bold 24px sans-serif';
+    ctx.fillStyle = '#000000';
+    ctx.fillText(text, coords.x, coords.y);
+  };
+
   return Util;
 
 });

@@ -20,6 +20,9 @@ define(['globals', 'util', 'pieces/gamePiece', 'pieces/basePiece'],
     // The next pieces to generate
     this.nextPieces = util.shuffle(this._pieceGen.slice());
 
+    // Array of next pieces (to display in game)
+    this.showPieces = [];
+
     // Blocks that have been frozen, organized by rows then columns
     // We also have rows for the border, to make stopping the pieces
     // at the border automatic
@@ -45,12 +48,60 @@ define(['globals', 'util', 'pieces/gamePiece', 'pieces/basePiece'],
       this._pieceGen = util.shuffle(this.nextPieces.slice());
     }
 
-    // Add new piece to the front
-    this.nextPieces.unshift(this._pieceGen.pop());
+    // Add new piece to the end of the "queue"
+    this.nextPieces.push(this._pieceGen.shift());
 
     // Pop and return next piece
-    return this.nextPieces.pop();
+    var nextPiece = this.nextPieces.shift();
 
+    // Update next pieces showcase
+    this.showNextPieces();
+
+    return nextPiece;
+
+  };
+
+  Tetvas.prototype.showNextPieces = function() {
+    // Height to begin showing at
+    var START_HEIGHT = 4;
+    var BOX_HEIGHT = 3;
+    var NUM_PIECES = 5;
+    var X_COORD = 12;
+
+    // First one is next piece
+    var nextPiece = this.showPieces.shift();
+    // Remove the next piece, since it's now in game
+    nextPiece && nextPiece.undraw();
+
+    var showPiece;
+    // Show next pieces
+    for (var i = 0; i < NUM_PIECES; ++i) {
+
+      // Where to put it
+      var coords = {
+        x : X_COORD,
+        y : START_HEIGHT + BOX_HEIGHT * i
+      };
+      var newPiece = false;
+
+      // Get display piece
+      if (!this.showPieces[i]) {
+        newPiece = true;
+        showPiece = new BasePiece(this.nextPieces[i]);
+      } else {
+        showPiece = this.showPieces[i];
+      }
+
+      // Undraw to move
+      showPiece.undraw();
+
+      // Move to new place
+      showPiece._origin = util.copyPoint(coords);
+      showPiece.updateBlocks();
+      showPiece.draw();
+
+      if (newPiece) this.showPieces.push(showPiece);
+    }
   };
 
   Tetvas.prototype.tick = function() {
@@ -128,15 +179,16 @@ define(['globals', 'util', 'pieces/gamePiece', 'pieces/basePiece'],
   Tetvas.prototype.gameOver = function() {
     /* Do the game over stuff. */
 
-    console.log(this.frozenBlocks);
-    var ctx = globals.ctx;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'bottom';
-    ctx.font = 'bold 24px sans-serif';
-    ctx.fillStyle = '#000000';
-    ctx.fillText(GAME_OVER_TEXT, GAME_TEXT_POINT.x, GAME_TEXT_POINT.y);
+    // Write game over text
+    util.writeText(GAME_OVER_TEXT, GAME_TEXT_POINT);
+
+    // Stop the game ticker
     window.clearInterval(this.gameTicker);
+
+    // Clear event listeners
     document.removeEventListener('keydown', this._keydown, true);
+
+    // Reset all properties
     Tetvas.call(this);
   };
 
