@@ -6,44 +6,35 @@ define(['pieces/basePiece', 'pieces/ghostPiece'],
     function(BasePiece, GhostPiece) {
 
   function GamePiece(shape, frozenBlocks) {
-    /*
-     * Make a new piece of the specified shape.
-     * Shapes : I, O, T, J, L, S, Z
-     */
-
-    // Call base constructor
-    BasePiece.call(this, shape);
-
     // Remember what we inherit from
     this._super = BasePiece.prototype;
+
+    // Call base constructor
+    BasePiece.call(this, shape, frozenBlocks);
 
     this.draw();
   }
 
   GamePiece.prototype = Object.create(BasePiece.prototype);
 
-  GamePiece.prototype._initBlocks = function() {
-    /* Initialize the blocks */
-
+  GamePiece.prototype._initBlocks = function(frozenBlocks) {
     // Create a ghost for this piece
     this.ghost = new GhostPiece(this.shape, frozenBlocks);
     this._super._initBlocks.call(this);
   };
 
   GamePiece.prototype.draw = function() {
-    /* Draw the piece */
     this.ghost.draw();
     this._super.draw.call(this);
   };
 
   GamePiece.prototype.undraw = function() {
-    /* Undraw the piece */
     this._super.undraw.call(this);
     this.ghost.undraw();
   };
 
   GamePiece.prototype._move = function(frozenBlocks, axis, mag) {
-    var success = this._super._move.call(frozenBlocks, axis, mag);
+    var success = this._super._move.call(this, frozenBlocks, axis, mag);
 
     if (success) {
       // Move the ghost (if we have one)
@@ -51,6 +42,8 @@ define(['pieces/basePiece', 'pieces/ghostPiece'],
       this.ghost._move(frozenBlocks, axis, mag);
       this.ghost.drop(frozenBlocks);
     }
+
+    this.draw();
 
     return success;
   };
@@ -76,8 +69,6 @@ define(['pieces/basePiece', 'pieces/ghostPiece'],
   };
 
   GamePiece.prototype._rotate = function(frozenBlocks, dir, recur) {
-    /* Rotate the piece in the specified direction. */
-
     var success = this._super._rotate.call(this, frozenBlocks, dir, recur);
 
     if (!recur && success) {

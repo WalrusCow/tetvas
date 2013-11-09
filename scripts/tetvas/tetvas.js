@@ -1,4 +1,4 @@
-define(['globals', 'util', 'blocks/block', 'pieces/piece'], function(globals, util, Block, Piece) {
+define(['globals', 'util', 'pieces/gamePiece'], function(globals, util, GamePiece) {
 
   var GAME_OVER_TEXT = 'Game Over';
   var GAME_TEXT_POINT = { x : 165, y : 130 };
@@ -118,7 +118,7 @@ define(['globals', 'util', 'blocks/block', 'pieces/piece'], function(globals, ut
 
   Tetvas.prototype.createPiece = function(shape) {
     /* Create a new piece for the game. Return null if it intersects. */
-    var piece = new Piece(shape || this.getNextPiece(), this.frozenBlocks);
+    var piece = new GamePiece(shape || this.getNextPiece(), this.frozenBlocks);
     // Check for game over
     var self = this;
     // Weird timeout hack because of asynchronous require.js

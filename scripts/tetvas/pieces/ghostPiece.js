@@ -6,15 +6,15 @@ define(['blocks/ghostBlock', 'pieces/basePiece'],
     function(GhostBlock, BasePiece) {
 
   function GhostPiece(shape, frozenBlocks) {
+    // Remember inheritance
+    this._super = BasePiece.prototype;
+
     // Inherit from BasePiece class
     BasePiece.call(this, shape, frozenBlocks);
 
     // We have no fill
     delete this.fill;
-
-    // Remember inheritance
-    this._super = BasePiece.prototype;
-    this.reghost(frozenBlocks);
+    this.drop(frozenBlocks);
   }
 
   // We inherit from the BasePiece class, so we need to copy the prototype

@@ -9,7 +9,11 @@ define(['globals', 'util', 'blocks/block'],
     /*
      * Make a new piece of the specified shape.
      * Shapes : I, O, T, J, L, S, Z
+     *
+     * Take optional extra arguments to pass to _initBlocks
      */
+
+    var args = Array.prototype.slice.call(arguments);
 
     // Colour of this piece
     this._fill = globals.SHAPE_FILLS[shape];
@@ -21,10 +25,10 @@ define(['globals', 'util', 'blocks/block'],
     this._origin = { x : 4, y : 0 };
 
     // Initialize the blocks
-    this._initBlocks();
+    this._initBlocks.apply(this, args.slice(1));
   }
 
-  BasePiece.prototype._initBlock = function(coords {
+  BasePiece.prototype._initBlock = function(coords) {
     /* Initialize a block. For overriding. */
     this.blocks.push(new Block(coords, this._fill));
   };
