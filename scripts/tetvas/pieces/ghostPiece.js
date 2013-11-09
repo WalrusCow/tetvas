@@ -2,37 +2,43 @@
  * Class to represent a ghost piece
  *******************************************************/
 
-define(['util', 'globals', 'blocks/ghostBlock', 'pieces/piece'],
-    function(util, globals, GhostBlock, Piece) {
+define(['blocks/ghostBlock', 'pieces/basePiece'],
+    function(GhostBlock, BasePiece) {
 
   function GhostPiece(shape, frozenBlocks) {
-    // Inherit from Piece class
-    Piece.call(this, shape, frozenBlocks);
+    // Inherit from BasePiece class
+    BasePiece.call(this, shape, frozenBlocks);
 
-    // Inherit!
-    this._super = Piece.prototype;
+    // We have no fill
+    delete this.fill;
+
+    // Remember inheritance
+    this._super = BasePiece.prototype;
     this.reghost(frozenBlocks);
   }
 
-  // We inherit from the Piece class, so we need to copy the prototype
-  GhostPiece.prototype = Object.create(Piece.prototype);
+  // We inherit from the BasePiece class, so we need to copy the prototype
+  GhostPiece.prototype = Object.create(BasePiece.prototype);
 
   GhostPiece.prototype._initBlock = function(coords) {
     this.blocks.push(new GhostBlock(coords));
   };
 
-  GhostPiece.prototype.moveUp = function(origin) {
+  GhostPiece.prototype.moveUp = function(_origin) {
     // Move the ghost to where the original piece is from
-    this.origin.y = origin.y;
+    this._origin.y = _origin.y;
   };
 
-  GhostPiece.prototype.reghost = function(frozenBlocks) {
+  GhostPiece.prototype.drop = function(frozenBlocks) {
     // Undraw the blocks
     this.undraw();
 
     // Update the blocks to their new positions
     this.updateBlocks();
     while(this.moveDown(frozenBlocks));
+
+    // Draw!
+    this.draw();
   };
 
   return GhostPiece;

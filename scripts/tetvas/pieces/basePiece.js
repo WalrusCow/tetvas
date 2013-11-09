@@ -2,35 +2,34 @@
  * Base piece class - all pieces inherit from here
  *******************************************************/
 
-define(['require', 'globals', 'util', 'blocks/block'],
-    function(require, globals, util, Block) {
+define(['globals', 'util', 'blocks/block'],
+    function(globals, util, Block) {
 
-  function Piece(shape) {
+  function BasePiece(shape) {
     /*
      * Make a new piece of the specified shape.
      * Shapes : I, O, T, J, L, S, Z
      */
 
     // Colour of this piece
-    this.fill = globals.SHAPE_FILLS[shape];
+    this._fill = globals.SHAPE_FILLS[shape];
 
     // Shape of piece
     this.shape = shape;
 
     // Origin of the piece (points are relative to this)
-    this.origin = { x : 4, y : 0 };
+    this._origin = { x : 4, y : 0 };
 
     // Initialize the blocks
     this._initBlocks();
-
   }
 
-  Piece.prototype._initBlock = function(coords, fill) {
+  BasePiece.prototype._initBlock = function(coords {
     /* Initialize a block. For overriding. */
-    this.blocks.push(new Block(coords, fill));
+    this.blocks.push(new Block(coords, this._fill));
   };
 
-  Piece.prototype._initBlocks = function() {
+  BasePiece.prototype._initBlocks = function() {
     /* Initialize the blocks */
 
     // Points for the piece
@@ -44,16 +43,16 @@ define(['require', 'globals', 'util', 'blocks/block'],
     for (var i = 0; i < pts.length; ++i) {
       var newPoint = util.copyPoint(pts[i]);
       this.points.push(newPoint);
-      this._initBlock(this.getCoords(newPoint), this.fill);
+      this._initBlock(this.getCoords(newPoint));
     }
   };
 
-  Piece.prototype.getCoords = function(pt) {
+  BasePiece.prototype.getCoords = function(pt) {
     /* Get the grid coordinates for a point relative to this piece's origin */
-    return { x : this.origin.x + pt.x, y : this.origin.y + pt.y };
+    return { x : this._origin.x + pt.x, y : this._origin.y + pt.y };
   };
 
-  Piece.prototype.draw = function() {
+  BasePiece.prototype.draw = function() {
     /* Draw the piece */
 
     for (var i = 0; i < this.blocks.length; ++i) {
@@ -61,21 +60,21 @@ define(['require', 'globals', 'util', 'blocks/block'],
     }
   };
 
-  Piece.prototype.undraw = function() {
+  BasePiece.prototype.undraw = function() {
     /* Undraw the piece */
     for (var i = 0; i < this.blocks.length; ++i) {
       this.blocks[i].undraw();
     }
   };
 
-  Piece.prototype.updateBlocks = function() {
+  BasePiece.prototype.updateBlocks = function() {
     /* Update the blocks to have positions based on the origin of the piece */
     for (var i = 0; i < this.blocks.length; ++i) {
       this.blocks[i].setPoint(this.getCoords(this.points[i]));
     }
   };
 
-  Piece.prototype.intersects = function(frozenBlocks) {
+  BasePiece.prototype.intersects = function(frozenBlocks) {
     /* Determine if this piece intersects any frozen blocks */
 
     for (var i = 0; i < this.blocks.length; ++i) {
@@ -88,7 +87,7 @@ define(['require', 'globals', 'util', 'blocks/block'],
     return false;
   };
 
-  Piece.prototype._move = function(frozenBlocks, axis, mag) {
+  BasePiece.prototype._move = function(frozenBlocks, axis, mag) {
     /*
      * Move the piece along the specified axis mag spaces
      * Returns true if the move is successful (no intersection with frozenBlocks)
@@ -96,7 +95,7 @@ define(['require', 'globals', 'util', 'blocks/block'],
      */
 
     // Move along the axis
-    this.origin[axis] += mag;
+    this._origin[axis] += mag;
 
     // Undraw the blocks, since we might move (but we might not)
     this.undraw();
@@ -106,7 +105,7 @@ define(['require', 'globals', 'util', 'blocks/block'],
     // Check for intersection
     if (this.intersects(frozenBlocks)) {
       // It does intersect. Undo the move
-      this.origin[axis] -= mag;
+      this._origin[axis] -= mag;
 
       this.updateBlocks();
       this.draw();
@@ -119,19 +118,18 @@ define(['require', 'globals', 'util', 'blocks/block'],
   };
 
   /* Functions to move various directions */
-  Piece.prototype.moveLeft = function(frozenBlocks) {
+  BasePiece.prototype.moveLeft = function(frozenBlocks) {
     return this._move(frozenBlocks, 'x', -1);
   };
-  Piece.prototype.moveRight = function(frozenBlocks) {
+  BasePiece.prototype.moveRight = function(frozenBlocks) {
     return this._move(frozenBlocks, 'x', 1);
   };
 
-  Piece.prototype.moveDown = function(frozenBlocks) {
-    /* If the move failed then the piece freezes. */
+  BasePiece.prototype.moveDown = function(frozenBlocks) {
     return this._move(frozenBlocks, 'y', 1);
   };
 
-  Piece.prototype._rotate = function(frozenBlocks, dir, recur) {
+  BasePiece.prototype._rotate = function(frozenBlocks, dir, recur) {
     /* Rotate the piece in the specified direction. */
 
     // This one doesn't need to be rotated
@@ -174,9 +172,9 @@ define(['require', 'globals', 'util', 'blocks/block'],
   };
 
   // Rotate right and left
-  Piece.prototype.rotateRight = function(frozenBlocks) { this._rotate(frozenBlocks, 1); };
-  Piece.prototype.rotateLeft = function(frozenBlocks) { this._rotate(frozenBlocks, -1); };
+  BasePiece.prototype.rotateRight = function(frozenBlocks) { this._rotate(frozenBlocks, 1); };
+  BasePiece.prototype.rotateLeft = function(frozenBlocks) { this._rotate(frozenBlocks, -1); };
 
-  return Piece;
+  return BasePiece;
 
 });
