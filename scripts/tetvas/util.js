@@ -105,6 +105,11 @@ define(['globals'], function(globals) {
     ctx.fillText(text, coords.x, coords.y);
   };
 
+  Util.bound = function(i, min, max) {
+    // Force `i` between `min` and `max`
+    return i < min ? min : i > max ? max : i;
+  };
+
   return Util;
 
 });

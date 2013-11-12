@@ -139,39 +139,72 @@ define(['globals', 'util', 'blocks/block'],
     // This one doesn't need to be rotated
     if (this.shape === 'O') return true;
 
-    // Only undraw the shape if we are not undoing
-    // a previous rotation
-    if (!recur) this.undraw();
+    // Actually do the rotation
+    function __rotate() {
+      if (this.shape === 'I') {
+        // For I shape just swap x and y
+        for (var i = 0; i < this.points.length; ++i) {
+          // Swap x and y
+          this.points[i] = { x : this.points[i].y, y : this.points[i].x };
+          this.blocks[i].setPoint(this.getCoords(this.points[i]));
+        }
 
-    if (this.shape === 'I') {
-      // For I shape just swap x and y
-      for (var i = 0; i < this.points.length; ++i) {
-        // Swap x and y
-        this.points[i] = { x : this.points[i].y, y : this.points[i].x };
-        this.blocks[i].setPoint(this.getCoords(this.points[i]));
-      }
-
-    } else {
-      // We are doing a normal rotation
-      var p;
-      for (var i = 0; i < this.points.length; ++i) {
-        p = this.points[i];
-        // Swap and make negative (2x2 rotation matrix for pi/2 rotation)
-        this.points[i] = { x : -p.y * dir, y : p.x * dir };
-        this.blocks[i].setPoint(this.getCoords(this.points[i]));
+      } else {
+        // We are doing a normal rotation
+        for (var i = 0; i < this.points.length; ++i) {
+          var p = this.points[i];
+          // Swap and make negative (2x2 rotation matrix for pi/2 rotation)
+          this.points[i] = { x : -p.y * dir, y : p.x * dir };
+          this.blocks[i].setPoint(this.getCoords(this.points[i]));
+        }
       }
     }
 
-    // Check for intersection
-    if (!recur && this.intersects(frozenBlocks)) {
-      // If we intersected then we undo the rotation
-      this._rotate(frozenBlocks, -dir, true);
-      return false;
+    function _boundOrigin(pt) {
+      // Ensure that the origin does not go out of bounds
+      pt.x = util.bound(pt.x, 0, 9);
+      pt.y = util.bound(pt.y, 0, 20);
+      return pt;
     }
 
-    // No intersection - return success
+    // Only undraw the shape if we are not undoing a previous rotation
+    this.undraw();
+
+    // Save the original origin here
+    var oldOrigin = this._origin;
+    var wallKicks = globals.WALL_KICKS[this.shape];
+
+    // Perform initial rotation
+    __rotate.call(this);
+
+    for (var i = 0; i < wallKicks.length; ++i) {
+      // Move the origin
+      this._origin = util.copyPoint(oldOrigin);
+      this._origin.x += wallKicks[i].x * dir;
+      this._origin.y += wallKicks[i].y;
+
+      this._origin = _boundOrigin(this._origin);
+
+      // Update blocks to shifted origin
+      this.updateBlocks();
+
+      // We successfully rotated, so we are done
+      if (!this.intersects(frozenBlocks)) {
+        // No intersection - return success
+        this.draw();
+        return true;
+      }
+    }
+
+    // Reset the origin
+    this._origin = oldOrigin;
+    this.updateBlocks();
+
+    // No successful rotation - undo the rotation
+    dir *= -1;
+    __rotate.call(this);
     this.draw();
-    return true;
+    return false;
 
   };
 
