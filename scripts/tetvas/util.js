@@ -22,11 +22,11 @@ define(['globals'], function(globals) {
     // 1 is half the line width, so there is no overlap
     var y = {
       min : globals.GRID_OFFSET.y.start - 1,
-      max : canvas.height - globals.GRID_OFFSET.y.start + 1
+      max : canvas.height - globals.GRID_OFFSET.y.end + 1
     };
     var x = {
       min : globals.GRID_OFFSET.x.start - 1,
-      max : canvas.width - globals.GRID_OFFSET.x.start + 1
+      max : canvas.width - globals.GRID_OFFSET.x.end + 1
     };
 
     // Left border
@@ -96,13 +96,15 @@ define(['globals'], function(globals) {
     return true;
   };
 
-  Util.writeText = function(text, coords) {
+  Util.writeText = function(text, coords, options) {
+    options = options || {};
     var ctx = globals.ctx;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'bottom';
-    ctx.font = 'bold 24px sans-serif';
-    ctx.fillStyle = '#000000';
+    ctx.textAlign = options.textAlign || 'center';
+    ctx.textBaseline = options.textBaseline || 'bottom';
+    ctx.font = options.font || 'bold 24px sans-serif';
+    ctx.fillStyle = options.fillStyle || '#000000';
     ctx.fillText(text, coords.x, coords.y);
+    console.log(text);
   };
 
   Util.bound = function(i, min, max) {

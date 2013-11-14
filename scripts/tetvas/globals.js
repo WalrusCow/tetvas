@@ -27,7 +27,22 @@ define([], function() {
   Globals.GRID_SIZE = 15;
   Globals.GRID_OFFSET = {
     x : { start : 90, end : 90 },
-    y : { start : 2, end : 2}
+    y : { start : 2, end : 52}
+  };
+
+  Globals.SCORE_TEXT = {
+    textAlign : 'left',
+    textBaseline : 'top',
+    coords : { x : 120, y : 310 }
+  };
+
+  // Scores to add based on rows cleared
+  Globals.SCORES = {
+    0 : 0,
+    1 : 100,
+    2 : 200,
+    3 : 400,
+    4 : 1000
   };
 
   // Initial speed of the game ticker

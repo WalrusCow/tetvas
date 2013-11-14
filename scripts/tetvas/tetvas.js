@@ -9,6 +9,8 @@ define(['globals', 'util', 'pieces/gamePiece', 'pieces/basePiece'],
     // Initial speed
     this.speed = globals.START_SPEED;
 
+    this.score = 0;
+
     // Boolean to indicate if the game is ongoing
     this.playing = false;
 
@@ -112,13 +114,35 @@ define(['globals', 'util', 'pieces/gamePiece', 'pieces/basePiece'],
   };
 
   Tetvas.prototype.checkFullRows = function(rows) {
-    // Check certain rows
+    /* Check certain rows to see if they should be removed. Also keep score. */
+
+    // Count the number of rows cleared for score
+    var numCleared = 0;
+
     // We have to check each row to see if it's full
     for (var i = 0; i < rows.length; ++i) {
       if (util.rowFull(this.frozenBlocks[rows[i]])) {
         this.clearRow(rows[i]);
+        numCleared += 1;
       }
     }
+
+    this.addScore(numCleared);
+    this.updateScore();
+  };
+
+  Tetvas.prototype.updateScore = function() {
+    /* Update the score on the canvas. */
+    // Clear old score
+    globals.ctx.clearRect(120, 310, 200, 200);
+    var textCoords = globals.SCORE_TEXT.coords;
+    var options = globals.SCORE_TEXT;
+    util.writeText(this.score, textCoords, options);
+  };
+
+  Tetvas.prototype.addScore = function(rowsCleared) {
+    /* Add to score based on number of rows cleared. */
+    this.score += globals.SCORES[rowsCleared];
   };
 
   Tetvas.prototype.undrawRow = function(row) {
