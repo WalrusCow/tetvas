@@ -104,7 +104,6 @@ define(['globals'], function(globals) {
     ctx.font = options.font || 'bold 24px sans-serif';
     ctx.fillStyle = options.fillStyle || '#000000';
     ctx.fillText(text, coords.x, coords.y);
-    console.log(text);
   };
 
   Util.bound = function(i, min, max) {

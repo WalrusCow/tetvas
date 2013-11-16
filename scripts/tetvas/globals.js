@@ -82,5 +82,19 @@ define([], function() {
     'O' : [ {x:0, y:0}, {x:-1, y:0}, {x:1, y:0}, {x:1, y:1}, {x:-1, y:1} ]
   };
 
+  // Options for the label text
+  Globals.LABEL_TEXT = {
+    textAlign : 'left',
+    textBaseline : 'top',
+    font : 'bold 16px sans-serif'
+  };
+
+  // Label coordinates
+  Globals.LABELS = {
+    'Score: ' : { x : 60, y : 315 },
+    'Hold' : { x : 20, y : 20 },
+    'Next' : { x : 265, y : 20 }
+  };
+
   return Globals;
 });

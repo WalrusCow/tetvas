@@ -42,6 +42,16 @@ define(['globals', 'util', 'pieces/gamePiece', 'pieces/basePiece'],
 
   };
 
+  Tetvas.prototype.drawLabels = function() {
+    /* Draw labels for parts of the game (score, etc) */
+
+    var labels = globals.LABELS;
+    for (var label in labels) {
+      util.writeText(label, labels[label], globals.LABEL_TEXT);
+    }
+
+  };
+
   Tetvas.prototype.getNextPiece = function() {
     /* Get the next piece to generate */
 
@@ -348,6 +358,9 @@ define(['globals', 'util', 'pieces/gamePiece', 'pieces/basePiece'],
   Tetvas.prototype._initCanvas = function() {
     util.clearCanvas();
     util.drawBorders();
+
+    this.drawLabels();
+    this.updateScore();
   };
 
   return Tetvas;
