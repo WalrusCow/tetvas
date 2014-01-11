@@ -40,6 +40,13 @@ define(['globals', 'util', 'pieces/gamePiece', 'pieces/basePiece'],
       this.frozenBlocks[20][i] = true;
     }
 
+    var startButton = document.getElementById('tetvas-start');
+    var self = this;
+    startButton.addEventListener('click', function(e) {
+      self.start();
+    });
+
+
   };
 
   Tetvas.prototype.drawLabels = function() {
@@ -280,11 +287,6 @@ define(['globals', 'util', 'pieces/gamePiece', 'pieces/basePiece'],
     // We listen to keydown event
     this._keydown = function(e) { self.keyStroke(e.keyCode); };
     document.addEventListener('keydown', this._keydown, true);
-
-    var startButton = document.getElementById('tetvas-start');
-    startButton.addEventListener('click', function(e) {
-      self.start();
-    });
 
   };
 
