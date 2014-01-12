@@ -233,51 +233,61 @@ define(['globals', 'util', 'pieces/gamePiece', 'pieces/basePiece'],
     Tetvas.call(this);
   };
 
-  Tetvas.prototype.keyStroke = function(key) {
+  Tetvas.prototype.keyStroke = function(e) {
     /* Handle a keystroke */
 
+    var key = e.keyCode;
     switch(key) {
       // Move piece left
       case globals.LEFT_ARROW:
         this.piece.moveLeft(this.frozenBlocks);
+        e.preventDefault();
         break;
 
       // Move piece right
       case globals.RIGHT_ARROW:
         this.piece.moveRight(this.frozenBlocks);
+        e.preventDefault();
         break;
 
       // Move piece down
       case globals.DOWN_ARROW:
         this.piece.moveDown(this.frozenBlocks);
+        e.preventDefault();
         break;
 
       // Rotate CW
       case globals.UP_ARROW:
       case globals.X_KEY:
         this.piece.rotateRight(this.frozenBlocks);
+        e.preventDefault();
         break;
 
       // Rotate CCW
       case globals.Z_KEY:
         this.piece.rotateLeft(this.frozenBlocks);
+        e.preventDefault();
         break;
 
       case globals.SHIFT_KEY:
         this.holdPiece();
+        e.preventDefault();
         break;
 
       // Hard drop
       case globals.CTRL_KEY:
       case globals.SPACE_BAR:
         while(this.moveDown());
+        e.preventDefault();
         break;
 
       // Pause game
       case globals.P_KEY:
         this.togglePause();
+        e.preventDefault();
         break;
     }
+
   };
 
   Tetvas.prototype.registerListeners = function() {
@@ -285,7 +295,9 @@ define(['globals', 'util', 'pieces/gamePiece', 'pieces/basePiece'],
 
     var self = this;
     // We listen to keydown event
-    this._keydown = function(e) { self.keyStroke(e.keyCode); };
+    this._keydown = function(e) {
+      self.keyStroke(e);
+    };
     document.addEventListener('keydown', this._keydown, true);
 
   };
