@@ -65,7 +65,6 @@ define(['pieces/basePiece', 'pieces/ghostPiece'],
 
     // We just want the keys
     return Object.keys(rows);
-
   };
 
   GamePiece.prototype._rotate = function(frozenBlocks, dir, recur) {
@@ -79,10 +78,8 @@ define(['pieces/basePiece', 'pieces/ghostPiece'],
     }
 
     this.draw();
-
     return success;
   };
 
   return GamePiece;
-
 });

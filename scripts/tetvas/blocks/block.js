@@ -65,7 +65,6 @@ define(['util', 'globals'], function(util, globals) {
       }
     }
     return false;
-
   };
 
   return Block;

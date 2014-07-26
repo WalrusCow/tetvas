@@ -42,5 +42,4 @@ define(['blocks/ghostBlock', 'pieces/basePiece'],
   };
 
   return GhostPiece;
-
 });

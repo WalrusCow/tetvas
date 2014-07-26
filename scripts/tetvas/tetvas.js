@@ -5,7 +5,6 @@ define(['globals', 'util', 'pieces/gamePiece', 'pieces/basePiece'],
   var GAME_TEXT_POINT = { x : 165, y : 130 };
 
   function Tetvas() {
-
     // Initial speed
     this.speed = globals.START_SPEED;
 
@@ -45,8 +44,6 @@ define(['globals', 'util', 'pieces/gamePiece', 'pieces/basePiece'],
     startButton.addEventListener('click', function(e) {
       self.start();
     });
-
-
   };
 
   Tetvas.prototype.drawLabels = function() {
@@ -56,7 +53,6 @@ define(['globals', 'util', 'pieces/gamePiece', 'pieces/basePiece'],
     for (var label in labels) {
       util.writeText(label, labels[label], globals.LABEL_TEXT);
     }
-
   };
 
   Tetvas.prototype.getNextPiece = function() {
@@ -77,7 +73,6 @@ define(['globals', 'util', 'pieces/gamePiece', 'pieces/basePiece'],
     this.showNextPieces();
 
     return nextPiece;
-
   };
 
   Tetvas.prototype.showNextPieces = function() {
@@ -287,7 +282,6 @@ define(['globals', 'util', 'pieces/gamePiece', 'pieces/basePiece'],
         e.preventDefault();
         break;
     }
-
   };
 
   Tetvas.prototype.registerListeners = function() {
@@ -299,7 +293,6 @@ define(['globals', 'util', 'pieces/gamePiece', 'pieces/basePiece'],
       self.keyStroke(e);
     };
     document.addEventListener('keydown', this._keydown, true);
-
   };
 
   Tetvas.prototype.holdPiece = function() {

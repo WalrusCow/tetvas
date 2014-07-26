@@ -58,7 +58,6 @@ define(['globals', 'util', 'blocks/block'],
 
   BasePiece.prototype.draw = function() {
     /* Draw the piece */
-
     for (var i = 0; i < this.blocks.length; ++i) {
       this.blocks[i].draw();
     }
@@ -80,7 +79,6 @@ define(['globals', 'util', 'blocks/block'],
 
   BasePiece.prototype.intersects = function(frozenBlocks) {
     /* Determine if this piece intersects any frozen blocks */
-
     for (var i = 0; i < this.blocks.length; ++i) {
       var coords = this.blocks[i].gridPoint;
       if (frozenBlocks[coords.y][coords.x]) {
@@ -205,7 +203,6 @@ define(['globals', 'util', 'blocks/block'],
     __rotate.call(this);
     this.draw();
     return false;
-
   };
 
   // Rotate right and left
@@ -213,5 +210,4 @@ define(['globals', 'util', 'blocks/block'],
   BasePiece.prototype.rotateLeft = function(frozenBlocks) { this._rotate(frozenBlocks, -1); };
 
   return BasePiece;
-
 });
