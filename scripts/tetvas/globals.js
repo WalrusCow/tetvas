@@ -42,8 +42,12 @@ define([], function() {
     1 : 100,
     2 : 200,
     3 : 400,
-    4 : 1000
+    4 : 800
   };
+
+  // Score required to increase speed
+  Globals.LEVEL_SCORE = 2000;
+  Globals.LEVEL_SPEED_RATIO = 0.80;
 
   // Initial speed of the game ticker
   Globals.START_SPEED = 1000;
