@@ -111,7 +111,27 @@ define(['globals'], function(globals) {
     return i < min ? min : i > max ? max : i;
   };
 
-  return Util;
+  Util.saveCanvas = function() {
+    // Push to stack
+    if (this._canvasData === undefined) {
+      this._canvasData = [];
+    }
+    this._canvasData.push(globals.canvas.toDataURL());
+  };
 
+  Util.restoreCanvas = function() {
+    if (!this._canvasData) return;
+    var self = this;
+
+    var img = new Image;
+    // It is important to set the source *after* setting the onload
+    img.onload = function() {
+      self.clearCanvas();
+      ctx.drawImage(img, 0, 0);
+    };
+    img.src = this._canvasData.pop();
+  };
+
+  return Util;
 });
 

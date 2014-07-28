@@ -1,8 +1,9 @@
 define(['globals', 'util', 'pieces/gamePiece', 'pieces/basePiece'],
     function(globals, util, GamePiece, BasePiece) {
 
+  var PAUSE_TEXT = 'Paused';
   var GAME_OVER_TEXT = 'Game Over';
-  var GAME_TEXT_POINT = { x : 165, y : 130 };
+  var ALERT_TEXT_POINT = { x : 165, y : 130 };
 
   function Tetvas() {
     this.speed = globals.START_SPEED;
@@ -222,7 +223,7 @@ define(['globals', 'util', 'pieces/gamePiece', 'pieces/basePiece'],
     /* Do the game over stuff. */
 
     // Write game over text
-    util.writeText(GAME_OVER_TEXT, GAME_TEXT_POINT);
+    util.writeText(GAME_OVER_TEXT, ALERT_TEXT_POINT);
 
     // Stop the game ticker
     window.clearInterval(this.gameTicker);
@@ -365,7 +366,17 @@ define(['globals', 'util', 'pieces/gamePiece', 'pieces/basePiece'],
 
   Tetvas.prototype.togglePause = function() {
     /* Toggle game pause */
-    this.gameTicker ? this.stopTicker() : this.startTicker();
+    if (this.gameTicker) {
+      // Pause
+      this.stopTicker();
+      util.saveCanvas();
+      util.writeText(PAUSE_TEXT, ALERT_TEXT_POINT);
+    }
+    else {
+      // Unpause
+      util.restoreCanvas();
+      this.startTicker();
+    }
   };
 
   Tetvas.prototype._initCanvas = function() {
