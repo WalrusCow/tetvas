@@ -238,10 +238,10 @@ define(['globals', 'util', 'pieces/gamePiece', 'pieces/basePiece'],
   Tetvas.prototype.keyStroke = function(e) {
     /* Handle a keystroke */
 
-    // No-op if game not running
-    if (!this.gameTicker) return;
-
     var key = e.keyCode;
+    // No-op if game not running - unless it's pause
+    if (!this.gameTicker && key != globals.P_KEY) return;
+
     switch(key) {
       // Move piece left
       case globals.LEFT_ARROW:
