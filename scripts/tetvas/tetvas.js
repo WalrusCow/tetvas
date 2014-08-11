@@ -238,6 +238,9 @@ define(['globals', 'util', 'pieces/gamePiece', 'pieces/basePiece'],
   Tetvas.prototype.keyStroke = function(e) {
     /* Handle a keystroke */
 
+    // No-op if game not running
+    if (!this.gameTicker) return;
+
     var key = e.keyCode;
     switch(key) {
       // Move piece left
