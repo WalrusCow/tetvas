@@ -1,7 +1,6 @@
 requirejs.config({
   urlArgs: "ts="+new Date().getTime(),
-  baseUrl : 'scripts/tetvas',
-  paths : { 'require' : '..' }
+  baseUrl : 'tetvas'
 });
 
 requirejs(['tetvas'], function(Tetvas) {
