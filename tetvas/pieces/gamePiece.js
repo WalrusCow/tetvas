@@ -2,7 +2,7 @@
  * Main piece used for game
  *******************************************************/
 
-define(['pieces/basePiece', 'pieces/ghostPiece'],
+define(['tetvas/pieces/basePiece', 'tetvas/pieces/ghostPiece'],
     function(BasePiece, GhostPiece) {
 
   function GamePiece(shape, frozenBlocks) {

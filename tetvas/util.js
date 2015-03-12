@@ -2,7 +2,7 @@
  * Utility functions
  *******************************************************/
 
-define(['globals'], function(globals) {
+define(['tetvas/globals'], function(globals) {
   var Util = {};
 
   // For shorthand

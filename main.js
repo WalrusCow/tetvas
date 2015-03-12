@@ -1,9 +1,11 @@
 requirejs.config({
   urlArgs: "ts="+new Date().getTime(),
-  baseUrl : 'tetvas'
+  paths: {
+    'tetvas' : './tetvas'
+  }
 });
 
-requirejs(['tetvas'], function(Tetvas) {
+requirejs(['tetvas/tetvas'], function(Tetvas) {
   var game = new Tetvas();
   game.start();
 });

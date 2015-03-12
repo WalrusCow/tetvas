@@ -2,7 +2,7 @@
  * Block class to represent a square on the game grid
  *******************************************************/
 
-define(['util', 'globals'], function(util, globals) {
+define(['tetvas/util', 'tetvas/globals'], function(util, globals) {
   var BORDER_COLOUR = '#000000';
   var BORDER_WIDTH = 1;
 

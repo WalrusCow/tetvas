@@ -2,7 +2,7 @@
  * Ghost block class - to override some colours
  *******************************************************/
 
-define(['blocks/block'], function(Block) {
+define(['tetvas/blocks/block'], function(Block) {
 
   var GHOST_BORDER_COLOUR = '#FFFFFF';
   var GHOST_FILL = '#C3C3C3';

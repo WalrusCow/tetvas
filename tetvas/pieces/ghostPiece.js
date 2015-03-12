@@ -2,7 +2,7 @@
  * Class to represent a ghost piece
  *******************************************************/
 
-define(['blocks/ghostBlock', 'pieces/basePiece'],
+define(['tetvas/blocks/ghostBlock', 'tetvas/pieces/basePiece'],
     function(GhostBlock, BasePiece) {
 
   function GhostPiece(shape, frozenBlocks) {

@@ -2,7 +2,7 @@
  * Base piece class - all pieces inherit from here
  *******************************************************/
 
-define(['globals', 'util', 'blocks/block'],
+define(['tetvas/globals', 'tetvas/util', 'tetvas/blocks/block'],
     function(globals, util, Block) {
 
   function BasePiece(shape) {

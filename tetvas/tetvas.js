@@ -1,4 +1,5 @@
-define(['globals', 'util', 'pieces/gamePiece', 'pieces/basePiece'],
+define(['tetvas/globals', 'tetvas/util', 'tetvas/pieces/gamePiece',
+        'tetvas/pieces/basePiece'],
     function(globals, util, GamePiece, BasePiece) {
 
   var PAUSE_TEXT = 'Paused';
